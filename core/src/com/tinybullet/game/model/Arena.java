@@ -14,8 +14,8 @@ public class Arena {
 
 	public Arena(World world) {
 		this.world = world;
-		body.add(PhysicManager.createBox(64f/2f,5f/2f, 64f, 5f, true, world));
-		body.add(PhysicManager.createBox(4f/2f,5f + 59f/2f, 4f, 59f, true, world));
+		body.add(PhysicManager.createBox(64f/2f,4f/2f, 64f, 4f, true, world));
+		body.add(PhysicManager.createBox(4f/2f,64f/2f, 4f, 64f, true, world));
 		body.add(PhysicManager.createBox(64f/2f,58f + 6f/2f, 64f, 6f, true, world));
 	}
 

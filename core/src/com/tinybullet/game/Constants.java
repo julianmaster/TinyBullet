@@ -7,9 +7,10 @@ public class Constants {
 	public static final int WINDOW_WIDTH = CAMERA_WIDTH * WINDOM_ZOOM;
 	public static final int WINDOW_HEIGHT = CAMERA_HEIGHT * WINDOM_ZOOM;
 
+	public static final float COLLISION_WIDTH_OFFSET = 0f;
+	public static final float COLLISION_HEIGHT_OFFSET = 5f;
+
 	public static final float PLAYER_COLLISION_WIDTH = 5f;
 	public static final float PLAYER_COLLISION_HEIGHT = 1f;
-	public static final float PLAYER_COLLISION_WIDTH_OFFSET = 0f;
-	public static final float PLAYER_COLLISION_HEIGHT_OFFSET = 5f;
-	public static final float PLAYER_SPEED = 25f;
+	public static final float PLAYER_SPEED = 30f;
 }
