@@ -14,12 +14,14 @@ import com.tinybullet.game.view.Assets;
 public class Pillar extends Entity {
 
 	private final World world;
-	private final Assets assets;
+	private final Assets asset;
+	private final Assets assetShadow;
 	private Body body;
 
-	public Pillar(World world, Assets assets, float x, float y, float width, float height) {
+	public Pillar(World world, Assets asset, Assets assetShadow, float x, float y, float width, float height) {
 		this.world = world;
-		this.assets = assets;
+		this.asset = asset;
+		this.assetShadow = assetShadow;
 		this.body = PhysicManager.createBox(x, y, width, height, true, world);
 	}
 
@@ -31,8 +33,15 @@ public class Pillar extends Entity {
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
 		Rectangle rectangle = (Rectangle) body.getUserData();
-		batch.draw(assetManager.get(assets.filename, Texture.class), body.getPosition().x - Constants.COLLISION_WIDTH_OFFSET - rectangle.width / 2f,
-				body.getPosition().y - Constants.COLLISION_HEIGHT_OFFSET - rectangle.height / 2f);
+		batch.draw(assetManager.get(asset.filename, Texture.class), body.getPosition().x - Constants.WALL_COLLISION_WIDTH_OFFSET - rectangle.width / 2f,
+				body.getPosition().y - Constants.WALL_COLLISION_HEIGHT_OFFSET - rectangle.height / 2f);
+	}
+
+	@Override
+	public void renderShadow(Batch batch, AssetManager assetManager) {
+		Rectangle rectangle = (Rectangle) body.getUserData();
+		batch.draw(assetManager.get(assetShadow.filename, Texture.class), body.getPosition().x - Constants.WALL_COLLISION_WIDTH_OFFSET - rectangle.width / 2f,
+				body.getPosition().y - Constants.WALL_COLLISION_HEIGHT_OFFSET - rectangle.height / 2f);
 	}
 
 	@Override

@@ -10,9 +10,14 @@ import com.tinybullet.game.Constants;
 public class PhysicManager {
 
 	public static Body createBox(float x, float y, float width, float height, boolean isStatic, World world) {
+		return createBox(x, y, width, height, 0f, isStatic, world);
+	}
+
+	public static Body createBox(float x, float y, float width, float height, float angle, boolean isStatic, World world) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = isStatic ? BodyDef.BodyType.KinematicBody : BodyDef.BodyType.DynamicBody;
 		bodyDef.position.set(x, y);
+		bodyDef.angle = angle;
 		bodyDef.fixedRotation = true;
 
 		Body body = world.createBody(bodyDef);
