@@ -1,11 +1,14 @@
 package com.tinybullet.game.model;
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
+import com.tinybullet.game.Constants;
 import com.tinybullet.game.physic.PhysicManager;
+import com.tinybullet.game.view.Assets;
 
 public class Bullet extends Entity {
 	private final World world;
@@ -15,7 +18,7 @@ public class Bullet extends Entity {
 	public Bullet(World world, float x, float y, float angle, Vector2 direction) {
 		this.world = world;
 		this.direction = direction;
-		this.body = PhysicManager.createBox(x, y, 2, 2, 0, false, world);
+		this.body = PhysicManager.createBox(x, y, 2, 1, angle, Constants.BULLET_CATEGORY_MASK, Constants.BULLET_MASK, false, world);
 	}
 
 	@Override
@@ -25,7 +28,7 @@ public class Bullet extends Entity {
 
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
-		System.out.println(body.getPosition());
+		batch.draw(assetManager.get(Assets.PLAYER1_BULLET.filename, Texture.class), body.getPosition().x, body.getPosition().y);
 	}
 
 	@Override

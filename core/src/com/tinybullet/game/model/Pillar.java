@@ -22,7 +22,7 @@ public class Pillar extends Entity {
 		this.world = world;
 		this.asset = asset;
 		this.assetShadow = assetShadow;
-		this.body = PhysicManager.createBox(x, y, width, height, true, world);
+		this.body = PhysicManager.createBox(x, y, width, height, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK, true, world);
 	}
 
 	@Override

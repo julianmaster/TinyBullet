@@ -15,4 +15,12 @@ public class Constants {
 	public static final float PLAYER_COLLISION_WIDTH = 5f;
 	public static final float PLAYER_COLLISION_HEIGHT = 1f;
 	public static final float PLAYER_SPEED = 32f;
+
+	public static final short BULLET_CATEGORY_MASK = 1;
+	public static final short PLAYER_CATEGORY_MASK = 2;
+	public static final short WALLS_CATEGORY_MASK = 4;
+
+	public static final short BULLET_MASK = WALLS_CATEGORY_MASK;
+	public static final short PLAYER_MASK = PLAYER_CATEGORY_MASK | WALLS_CATEGORY_MASK;
+	public static final short WALLS_MASK = BULLET_CATEGORY_MASK | PLAYER_CATEGORY_MASK;
 }

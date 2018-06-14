@@ -27,7 +27,7 @@ public class Player extends Entity {
 	public Player(MainScreen screen, World world) {
 		this.screen = screen;
 		this.world = world;
-		this.body = PhysicManager.createBox(10, 10, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, false, world);
+		this.body = PhysicManager.createBox(10, 10, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY_MASK, Constants.PLAYER_MASK, false, world);
 	}
 
 	@Override
@@ -55,10 +55,10 @@ public class Player extends Entity {
 			Vector3 screenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0f);
 			Vector3 worldCoords = screen.getGame().getCamera().unproject(screenCoords);
 
-			float angle = MathUtils.atan2(worldCoords.y - body.getPosition().y, worldCoords.x - body.getPosition().x);
+			float angle = MathUtils.atan2(worldCoords.y - body.getPosition().y + 3f, worldCoords.x - body.getPosition().x);
 			Vector2 direction = new Vector2(MathUtils.cos(angle), MathUtils.sin(angle));
 
-			screen.getNewEntities().add(new Bullet(world, worldCoords.x + body.getPosition().x, worldCoords.y + body.getPosition().y, angle, direction));
+			screen.getNewEntities().add(new Bullet(world, body.getPosition().x, body.getPosition().y - 3f, angle, direction));
 		}
 
 		body.setLinearVelocity((float)x * Constants.PLAYER_SPEED, (float)y * Constants.PLAYER_SPEED);

@@ -2,6 +2,7 @@ package com.tinybullet.game.model;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
+import com.tinybullet.game.Constants;
 import com.tinybullet.game.physic.PhysicManager;
 
 import java.util.ArrayList;
@@ -14,9 +15,10 @@ public class Arena {
 
 	public Arena(World world) {
 		this.world = world;
-		body.add(PhysicManager.createBox(64f/2f,4f/2f, 64f, 4f, true, world));
-		body.add(PhysicManager.createBox(4f/2f,64f/2f, 4f, 64f, true, world));
-		body.add(PhysicManager.createBox(64f/2f,58f + 6f/2f, 64f, 6f, true, world));
+		body.add(PhysicManager.createBox(64f/2f,4f/2f, 64f, 4f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK, true, world));
+		body.add(PhysicManager.createBox(4f/2f,64f/2f, 4f, 64f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK,true, world));
+		body.add(PhysicManager.createBox(64f/2f,58f + 6f/2f, 64f, 6f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK,true, world));
+		body.add(PhysicManager.createBox(60f + 4/2f,64f/2f, 4f, 64f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK,true, world));
 	}
 
 	public List<Body> getBody() {
