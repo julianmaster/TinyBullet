@@ -1,5 +1,7 @@
 package com.tinybullet.game;
 
+import com.badlogic.gdx.graphics.Color;
+
 public class Constants {
 	public static final int CAMERA_WIDTH = 64;
 	public static final int CAMERA_HEIGHT = 64;
@@ -17,12 +19,22 @@ public class Constants {
 	public static final float PLAYER_SPEED = 32f;
 
 	public static final float BULLET_SPEED = 128f;
+//	public static final float BULLET_SPEED = 1f;
 
-	public static final short BULLET_CATEGORY_MASK = 1;
-	public static final short PLAYER_CATEGORY_MASK = 2;
-	public static final short WALLS_CATEGORY_MASK = 4;
+	public static final short PLAYER_CATEGORY = 1;
+	public static final short PLAYER_WALLS_CATEGORY = 2;
 
-	public static final short BULLET_MASK = WALLS_CATEGORY_MASK;
-	public static final short PLAYER_MASK = PLAYER_CATEGORY_MASK | WALLS_CATEGORY_MASK;
-	public static final short WALLS_MASK = BULLET_CATEGORY_MASK | PLAYER_CATEGORY_MASK;
+	public static final short BULLETS_CATEGORY = 4;
+	public static final short BULLETS_WALLS_CATEGORY = 8;
+	public static final short BULLETS_PLAYER_CATEGORY = 16;
+
+	public static final short PLAYER_MASK = PLAYER_CATEGORY | PLAYER_WALLS_CATEGORY;
+	public static final short WALLS_MASK = PLAYER_CATEGORY;
+
+	public static final short BULLETS_MASK = BULLETS_WALLS_CATEGORY;
+	public static final short BULLETS_WALLS_MASK = BULLETS_CATEGORY;
+	public static final short BULLETS_PLAYERS_MASK = BULLETS_CATEGORY;
+
+	public static final Color BULLET_PLAYER1_HALO = new Color(0xc42c36b4);
+	public static final Color BULLET_PLAYER2_HALO = new Color(0x7bcf5cb4);
 }

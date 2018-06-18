@@ -15,10 +15,14 @@ public class Arena {
 
 	public Arena(World world) {
 		this.world = world;
-		body.add(PhysicManager.createBox(64f/2f,4f/2f, 64f, 4f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK, true, world));
-		body.add(PhysicManager.createBox(4f/2f,64f/2f, 4f, 64f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK,true, world));
-		body.add(PhysicManager.createBox(64f/2f,58f + 6f/2f, 64f, 6f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK,true, world));
-		body.add(PhysicManager.createBox(60f + 4/2f,64f/2f, 4f, 64f, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK,true, world));
+		body.add(PhysicManager.createBox(64f/2f,4f/2f, 64f, 4f, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK, true, this, world));
+		body.add(PhysicManager.createBox(64f/2f,4f/2f - 2f - 2f, 64f, 4f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK, true, this, world));
+		body.add(PhysicManager.createBox(4f/2f,64f/2f, 4f, 64f, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK,true, this, world));
+		body.add(PhysicManager.createBox(4f/2f,64f/2f - 2f, 4f, 64f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK,true, this, world));
+		body.add(PhysicManager.createBox(64f/2f,58f + 6f/2f, 64f, 6f, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK,true, this, world));
+		body.add(PhysicManager.createBox(64f/2f,58f + 6f/2f - 2f, 64f, 6f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK,true, this, world));
+		body.add(PhysicManager.createBox(60f + 4/2f,64f/2f, 4f, 64f, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK,true, this, world));
+		body.add(PhysicManager.createBox(60f + 4/2f,64f/2f - 2f, 4f, 64f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK,true, this, world));
 	}
 
 	public List<Body> getBody() {

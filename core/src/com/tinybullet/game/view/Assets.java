@@ -16,6 +16,8 @@ public enum Assets {
 	PLAYER2("player2.png"),
 	PLAYER_SHADOW("player_shadow.png"),
 	PLAYER1_BULLET("player1_bullet.png"),
+	PLAYER_BULLET_SHADOW("player_bullet_shadow.png"),
+	GRADIENT("gradient.png"),
 
 	// Test
 	TEST("badlogic.jpg");

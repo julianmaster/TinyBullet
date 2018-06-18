@@ -11,23 +11,24 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
-import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Assets;
 import com.tinybullet.game.view.MainScreen;
-
-import java.util.List;
 
 public class Player extends Entity {
 
 	private final MainScreen screen;
 	private final World world;
+	private final Vector2 size;
 	private Body body;
+	private Body bulletCollisionBody;
 
 	public Player(MainScreen screen, World world) {
 		this.screen = screen;
 		this.world = world;
-		this.body = PhysicManager.createBox(10, 10, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY_MASK, Constants.PLAYER_MASK, false, world);
+		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
+		this.body = PhysicManager.createBox(10, 10, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, this, world);
+		this.bulletCollisionBody = PhysicManager.createBox(10, 10, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, this, world);
 	}
 
 	@Override
@@ -62,6 +63,7 @@ public class Player extends Entity {
 		}
 
 		body.setLinearVelocity((float)x * Constants.PLAYER_SPEED, (float)y * Constants.PLAYER_SPEED);
+		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
 	}
 
 	@Override
@@ -80,7 +82,7 @@ public class Player extends Entity {
 	public int compareTo(Object o) {
 		if(o instanceof Entity) {
 			Entity e = (Entity)o;
-			return -Float.compare(body.getPosition().y, e.getPosition().y);
+			return -Float.compare(body.getPosition().y - size.y/2f, e.getPosition().y - e.getSize().y/2f);
 		}
 		return 0;
 	}
@@ -88,6 +90,11 @@ public class Player extends Entity {
 	@Override
 	public Vector2 getPosition() {
 		return body.getPosition();
+	}
+
+	@Override
+	public Vector2 getSize() {
+		return size;
 	}
 
 	public Body getBody() {

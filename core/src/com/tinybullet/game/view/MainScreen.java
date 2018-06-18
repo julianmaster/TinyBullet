@@ -16,6 +16,7 @@ import com.tinybullet.game.model.Arena;
 import com.tinybullet.game.model.Entity;
 import com.tinybullet.game.model.Pillar;
 import com.tinybullet.game.model.Player;
+import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,7 @@ public class MainScreen extends ScreenAdapter {
 	@Override
 	public void show() {
 		world = new World(new Vector2(), false);
+		world.setContactListener(new EntityContactListener(world));
 		arena = new Arena(world);
 
 		entities.add(new Player(this, world));

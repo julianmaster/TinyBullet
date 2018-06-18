@@ -16,13 +16,19 @@ public class Pillar extends Entity {
 	private final World world;
 	private final Assets asset;
 	private final Assets assetShadow;
+	private final Rectangle rectangle;
+	private final Vector2 size;
 	private Body body;
+	private Body bulletCollisionBody;
 
 	public Pillar(World world, Assets asset, Assets assetShadow, float x, float y, float width, float height) {
 		this.world = world;
 		this.asset = asset;
 		this.assetShadow = assetShadow;
-		this.body = PhysicManager.createBox(x, y, width, height, 0, Constants.WALLS_CATEGORY_MASK, Constants.WALLS_MASK, true, world);
+		this.rectangle = new Rectangle(x - width/2, y - height/2, width, height);
+		this.size = new Vector2(width, height);
+		this.body = PhysicManager.createBox(x, y, width, height, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK, true, this, world);
+		this.bulletCollisionBody = PhysicManager.createBox(x, y - 3f, width, height - 2f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK, true, this, world);
 	}
 
 	@Override
@@ -32,14 +38,12 @@ public class Pillar extends Entity {
 
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
-		Rectangle rectangle = (Rectangle) body.getUserData();
 		batch.draw(assetManager.get(asset.filename, Texture.class), body.getPosition().x - Constants.WALL_COLLISION_WIDTH_OFFSET - rectangle.width / 2f,
 				body.getPosition().y - Constants.WALL_COLLISION_HEIGHT_OFFSET - rectangle.height / 2f);
 	}
 
 	@Override
 	public void renderShadow(Batch batch, AssetManager assetManager) {
-		Rectangle rectangle = (Rectangle) body.getUserData();
 		batch.draw(assetManager.get(assetShadow.filename, Texture.class), body.getPosition().x - Constants.WALL_COLLISION_WIDTH_OFFSET - rectangle.width / 2f,
 				body.getPosition().y - Constants.WALL_COLLISION_HEIGHT_OFFSET - rectangle.height / 2f);
 	}
@@ -48,7 +52,7 @@ public class Pillar extends Entity {
 	public int compareTo(Object o) {
 		if(o instanceof Entity) {
 			Entity e = (Entity)o;
-			return -Float.compare(body.getPosition().y, e.getPosition().y);
+			return -Float.compare(body.getPosition().y - size.y/2f, e.getPosition().y - e.getSize().y/2f);
 		}
 		return 0;
 	}
@@ -56,5 +60,10 @@ public class Pillar extends Entity {
 	@Override
 	public Vector2 getPosition() {
 		return body.getPosition();
+	}
+
+	@Override
+	public Vector2 getSize() {
+		return size;
 	}
 }
