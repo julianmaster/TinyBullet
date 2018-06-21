@@ -13,28 +13,37 @@ import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Assets;
 
 public class Bullet extends Entity {
+
 	private final World world;
 	private final Vector2 size;
-	private Vector2 direction;
-	private Body body;
-	private boolean move = true;
 
-	public Bullet(World world, float x, float y, float angle, Vector2 direction) {
+	private Vector2 direction = null;
+	private Body body = null;
+	private boolean move = false;
+	private boolean dropped = false;
+
+	public Bullet(World world) {
 		this.world = world;
-		this.direction = direction;
 		this.size = new Vector2(2f, 1f);
-		this.body = PhysicManager.createBox(x, y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, this, world);
-		this.body.setBullet(true);
+	}
 
+	public void fire(float x, float y, float angle, Vector2 direction) {
+		if(body == null) {
+			this.body = PhysicManager.createBox(x, y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, this, world);
+			this.body.setBullet(true);
+		}
+		body.setTransform(x, y, angle);
+		this.direction = direction;
 		direction.scl(Constants.BULLET_SPEED);
+		move = true;
 	}
 
 	@Override
 	public void update(float delta) {
-		if(move) {
+		if(move && !dropped) {
 			body.setLinearVelocity(direction);
 		}
-		else {
+		else if(dropped) {
 			body.setLinearVelocity(Vector2.Zero);
 			body.setTransform(body.getPosition().x, body.getPosition().y, body.getAngle()+delta);
 		}
@@ -42,26 +51,30 @@ public class Bullet extends Entity {
 
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
-		if(!move) {
+		if(!move && dropped) {
 			Color saveColor = batch.getColor();
 			batch.setColor(Constants.BULLET_PLAYER1_HALO);
 			batch.draw(assetManager.get(Assets.GRADIENT.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f - 3f, 2f/2f, 1f/2f,
 					2f, 16f, 1f, 1f, 0f, 0, 0, 2, 16, false, false);
 			batch.setColor(saveColor);
 		}
-		batch.draw(assetManager.get(Assets.PLAYER1_BULLET.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f, 2f/2f, 1f/2f,
-				2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
+		if(move || dropped) {
+			batch.draw(assetManager.get(Assets.PLAYER1_BULLET.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f, 2f/2f, 1f/2f,
+					2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
+		}
 	}
 
 	@Override
 	public void renderShadow(Batch batch, AssetManager assetManager) {
-		batch.draw(assetManager.get(Assets.PLAYER_BULLET_SHADOW.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f - 3f, 2f/2f, 1f/2f,
-				2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
+		if(move || dropped) {
+			batch.draw(assetManager.get(Assets.PLAYER_BULLET_SHADOW.filename, Texture.class), body.getPosition().x - 2f / 2f, body.getPosition().y - 1f / 2f - 3f, 2f / 2f, 1f / 2f,
+					2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
+		}
 	}
 
 	@Override
 	public int compareTo(Object o) {
-		if(o instanceof Entity) {
+		if(body != null && o instanceof Entity) {
 			Entity e = (Entity)o;
 			return -Float.compare(body.getPosition().y - size.y/2f, e.getPosition().y - e.getSize().y/2f);
 		}
@@ -84,5 +97,13 @@ public class Bullet extends Entity {
 
 	public boolean isMove() {
 		return move;
+	}
+
+	public void setDropped(boolean dropped) {
+		this.dropped = dropped;
+	}
+
+	public boolean isDropped() {
+		return dropped;
 	}
 }

@@ -21,9 +21,10 @@ public class EntityContactListener implements ContactListener {
 
 		if(objectA instanceof Bullet) {
 			if (objectB instanceof Pillar || objectB instanceof Arena) {
-				Bullet bullet = (Bullet)objectA;
-				if(bullet.isMove()) {
+				Bullet bullet = (Bullet) objectA;
+				if (bullet.isMove()) {
 					bullet.setMove(false);
+					bullet.setDropped(true);
 				}
 			}
 		}
@@ -32,6 +33,7 @@ public class EntityContactListener implements ContactListener {
 				Bullet bullet = (Bullet)objectB;
 				if(bullet.isMove()) {
 					bullet.setMove(false);
+					bullet.setDropped(true);
 				}
 			}
 		}

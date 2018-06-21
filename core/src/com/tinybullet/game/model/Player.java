@@ -23,6 +23,8 @@ public class Player extends Entity {
 	private Body body;
 	private Body bulletCollisionBody;
 
+	private Bullet bullet;
+
 	public Player(MainScreen screen, World world) {
 		this.screen = screen;
 		this.world = world;
@@ -52,14 +54,15 @@ public class Player extends Entity {
 			y *= 0.7f;
 		}
 
-		if(Gdx.input.justTouched()) {
+		if(Gdx.input.justTouched() && bullet != null) {
 			Vector3 screenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0f);
 			Vector3 worldCoords = screen.getGame().getCamera().unproject(screenCoords);
 
 			float angle = MathUtils.atan2(worldCoords.y - body.getPosition().y + 3f, worldCoords.x - body.getPosition().x);
 			Vector2 direction = new Vector2(MathUtils.cos(angle), MathUtils.sin(angle));
 
-			screen.getNewEntities().add(new Bullet(world, body.getPosition().x, body.getPosition().y - 3f, angle, direction));
+			bullet.fire(body.getPosition().x, body.getPosition().y - 3f, angle, direction);
+			bullet = null;
 		}
 
 		body.setLinearVelocity((float)x * Constants.PLAYER_SPEED, (float)y * Constants.PLAYER_SPEED);
@@ -99,5 +102,13 @@ public class Player extends Entity {
 
 	public Body getBody() {
 		return body;
+	}
+
+	public void setBullet(Bullet bullet) {
+		this.bullet = bullet;
+	}
+
+	public Bullet getBullet() {
+		return bullet;
 	}
 }

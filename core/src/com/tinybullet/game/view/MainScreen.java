@@ -12,10 +12,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
-import com.tinybullet.game.model.Arena;
-import com.tinybullet.game.model.Entity;
-import com.tinybullet.game.model.Pillar;
-import com.tinybullet.game.model.Player;
+import com.tinybullet.game.model.*;
 import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.ArrayList;
@@ -28,6 +25,9 @@ public class MainScreen extends ScreenAdapter {
 	private Arena arena;
 	private List<Entity> entities = new ArrayList<>();
 	private List<Entity> newEntities = new ArrayList<>();
+
+	private Bullet redBullet;
+	private Bullet greenBullet;
 
 	// Box2D
 	private World world;
@@ -44,11 +44,20 @@ public class MainScreen extends ScreenAdapter {
 		world.setContactListener(new EntityContactListener(world));
 		arena = new Arena(world);
 
-		entities.add(new Player(this, world));
+		Player redPlayer = new Player(this, world);
+		entities.add(redPlayer);
 		entities.add(new Pillar(world, Assets.PILLAR1, Assets.PILLAR1_SHADOW, 19,43, 8, 6));
 		entities.add(new Pillar(world, Assets.PILLAR1, Assets.PILLAR1_SHADOW, 45,21, 8, 6));
 		entities.add(new Pillar(world, Assets.PILLAR2, Assets.PILLAR2_SHADOW, 17,21, 12, 6));
 		entities.add(new Pillar(world, Assets.PILLAR2, Assets.PILLAR2_SHADOW, 47,43, 12, 6));
+
+		redBullet = new Bullet(world);
+		greenBullet = new Bullet(world);
+
+		redPlayer.setBullet(redBullet);
+
+		entities.add(redBullet);
+		entities.add(greenBullet);
 	}
 
 	@Override
