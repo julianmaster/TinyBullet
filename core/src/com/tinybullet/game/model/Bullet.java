@@ -36,6 +36,7 @@ public class Bullet extends Entity {
 		this.direction = direction;
 		direction.scl(Constants.BULLET_SPEED);
 		move = true;
+		dropped = false;
 	}
 
 	@Override
@@ -83,7 +84,10 @@ public class Bullet extends Entity {
 
 	@Override
 	public Vector2 getPosition() {
-		return body.getPosition();
+		if(body != null) {
+			return body.getPosition();
+		}
+		return Vector2.Zero;
 	}
 
 	@Override
@@ -105,5 +109,13 @@ public class Bullet extends Entity {
 
 	public boolean isDropped() {
 		return dropped;
+	}
+
+	public void setBody(Body body) {
+		this.body = body;
+	}
+
+	public Body getBody() {
+		return body;
 	}
 }
