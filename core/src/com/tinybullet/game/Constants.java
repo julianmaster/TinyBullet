@@ -16,7 +16,7 @@ public class Constants {
 
 	public static final float PLAYER_COLLISION_WIDTH = 5f;
 	public static final float PLAYER_COLLISION_HEIGHT = 1f;
-	public static final float PLAYER_SPEED = 32f;
+	public static final float PLAYER_SPEED = 48f;
 
 	public static final float BULLET_SPEED = 128f;
 //	public static final float BULLET_SPEED = 1f;

@@ -12,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
+import com.tinybullet.game.network.TimeClient;
 import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.ArrayList;
@@ -59,6 +60,12 @@ public class MainScreen extends ScreenAdapter {
 
 		entities.add(redBullet);
 		entities.add(greenBullet);
+
+		try {
+			new TimeClient();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
