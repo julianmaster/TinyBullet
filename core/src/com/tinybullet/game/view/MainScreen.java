@@ -6,13 +6,14 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
-import com.tinybullet.game.network.TimeClient;
+import com.tinybullet.game.network.TinyBulletClient;
 import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.ArrayList;
@@ -35,6 +36,11 @@ public class MainScreen extends ScreenAdapter {
 	private List<Body> bodiesScheduledForRemoval = new ArrayList<>();
 	private boolean showDebugPhysics = true;
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
+
+	private BitmapFont font;
+
+	// Network
+	private TinyBulletClient client;
 
 	public MainScreen(TinyBullet game) {
 		this.game = game;
@@ -61,11 +67,10 @@ public class MainScreen extends ScreenAdapter {
 		entities.add(redBullet);
 		entities.add(greenBullet);
 
-		try {
-			new TimeClient();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// Network
+		client = new TinyBulletClient();
+
+		font = new BitmapFont();
 	}
 
 	@Override
@@ -104,6 +109,9 @@ public class MainScreen extends ScreenAdapter {
 			entity.render(batch, assetManager);
 		}
 		batch.draw(game.getAssetManager().get(Assets.WALL2.filename, Texture.class), 0, 0);
+		synchronized (client.getMessage()) {
+			font.draw(batch, client.getMessage(), 0f, 20f);
+		}
 		batch.end();
 
 		if(showDebugPhysics) {

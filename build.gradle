@@ -26,7 +26,8 @@ allprojects {
         box2DLightsVersion = '1.4'
         ashleyVersion = '1.7.0'
         aiVersion = '1.8.0'
-        nettyVersion = '4.1.25.Final'
+        vertxVersion = '3.5.2'
+        libVersion = '1.9'
     }
 
     repositories {
@@ -46,6 +47,7 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+        compile "com.github.czyzby:gdx-websocket-common:$libVersion.$gdxVersion-SNAPSHOT"
         
     }
 }
@@ -62,7 +64,21 @@ project(":html") {
         compile "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion:sources"
         compile "com.badlogicgames.gdx:gdx-box2d-gwt:$gdxVersion:sources"
+        compile "com.github.czyzby:gdx-websocket-gwt:$libVersion.$gdxVersion-SNAPSHOT"
+        compile "com.github.czyzby:gdx-websocket-gwt:$libVersion.$gdxVersion-SNAPSHOT:sources"
         
+    }
+}
+
+project(":server") {
+    apply plugin: "java"
+
+
+    dependencies {
+		compile project(":core")
+        compile "io.vertx:vertx-core:$vertxVersion"
+        compile "com.github.czyzby:gdx-websocket:$libVersion.$gdxVersion-SNAPSHOT"
+
     }
 }
 
@@ -73,7 +89,7 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
-        compile "io.netty:netty-all:$nettyVersion"
+        compile "com.github.czyzby:gdx-websocket:$libVersion.$gdxVersion-SNAPSHOT"
         
     }
 }

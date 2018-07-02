@@ -38,4 +38,7 @@ public class Constants {
 
 	public static final Color BULLET_PLAYER1_HALO = new Color(0xc42c36b4);
 	public static final Color BULLET_PLAYER2_HALO = new Color(0x7bcf5cb4);
+
+	// Network
+	public static final int PORT = 8465;
 }
