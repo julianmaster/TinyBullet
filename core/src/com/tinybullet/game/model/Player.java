@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
+import com.tinybullet.game.network.PlayerPosition;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Assets;
 import com.tinybullet.game.view.MainScreen;
@@ -20,6 +21,7 @@ public class Player extends Entity {
 	private final MainScreen screen;
 	private final World world;
 	private final Vector2 size;
+	private final PlayerPosition playerPosition = new PlayerPosition();
 	private Body body;
 	private Body bulletCollisionBody;
 
@@ -67,6 +69,11 @@ public class Player extends Entity {
 
 		body.setLinearVelocity((float)x * Constants.PLAYER_SPEED, (float)y * Constants.PLAYER_SPEED);
 		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
+		if(y != 0.0f || x != 0.0f) {
+			playerPosition.x = body.getPosition().x;
+			playerPosition.y = body.getPosition().y;
+			screen.getClient().send(playerPosition);
+		}
 	}
 
 	@Override

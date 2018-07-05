@@ -37,7 +37,6 @@ public class MainScreen extends ScreenAdapter {
 	private boolean showDebugPhysics = true;
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
-	private BitmapFont font;
 
 	// Network
 	private TinyBulletClient client;
@@ -69,8 +68,6 @@ public class MainScreen extends ScreenAdapter {
 
 		// Network
 		client = new TinyBulletClient();
-
-		font = new BitmapFont();
 	}
 
 	@Override
@@ -109,9 +106,6 @@ public class MainScreen extends ScreenAdapter {
 			entity.render(batch, assetManager);
 		}
 		batch.draw(game.getAssetManager().get(Assets.WALL2.filename, Texture.class), 0, 0);
-		synchronized (client.getMessage()) {
-			font.draw(batch, client.getMessage(), 0f, 20f);
-		}
 		batch.end();
 
 		if(showDebugPhysics) {
@@ -128,10 +122,15 @@ public class MainScreen extends ScreenAdapter {
 	@Override
 	public void dispose() {
 		world.dispose();
+		client.dispose();
 	}
 
 	public TinyBullet getGame() {
 		return game;
+	}
+
+	public TinyBulletClient getClient() {
+		return client;
 	}
 
 	public List<Entity> getNewEntities() {

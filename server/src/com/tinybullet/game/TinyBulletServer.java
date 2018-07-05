@@ -3,6 +3,7 @@ package com.tinybullet.game;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
 import com.tinybullet.game.network.MyJsonMessage;
+import com.tinybullet.game.network.PlayerPosition;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -21,20 +22,15 @@ public class TinyBulletServer {
 		final HttpServer server = vertx.createHttpServer();
 		server.websocketHandler(webSocket -> {
 			webSocket.frameHandler(frame -> handleFrame(webSocket, frame));
-			vertx.setTimer(5000L, id -> webSocket.close());
 		}).listen(Constants.PORT);
 	}
 
 	private void handleFrame(final ServerWebSocket webSocket, final WebSocketFrame frame) {
 		final Object request = serializer.deserialize(frame.binaryData().getBytes());
-		if(request instanceof MyJsonMessage) {
-			System.out.println("Receive message: "+((MyJsonMessage) request).text);
+		if(request instanceof PlayerPosition) {
+			PlayerPosition pp = (PlayerPosition)request;
+			System.out.println("Position: "+pp.x+" - "+pp.y);
 		}
-
-		final MyJsonMessage response = new MyJsonMessage();
-		response.id = idCounter.getAndIncrement();
-		response.text = "Hello client";
-		vertx.setTimer(1000L, id -> webSocket.writeFinalBinaryFrame(Buffer.buffer(serializer.serialize(response))));
 	}
 
 	public static void main (String[] arg) throws Exception {
