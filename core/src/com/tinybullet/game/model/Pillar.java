@@ -9,19 +9,19 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.physic.PhysicManager;
-import com.tinybullet.game.view.Assets;
+import com.tinybullet.game.view.Asset;
 
 public class Pillar extends Entity {
 
 	private final World world;
-	private final Assets asset;
-	private final Assets assetShadow;
+	private final Asset asset;
+	private final Asset assetShadow;
 	private final Rectangle rectangle;
 	private final Vector2 size;
 	private Body body;
 	private Body bulletCollisionBody;
 
-	public Pillar(World world, Assets asset, Assets assetShadow, float x, float y, float width, float height) {
+	public Pillar(World world, Asset asset, Asset assetShadow, float x, float y, float width, float height) {
 		this.world = world;
 		this.asset = asset;
 		this.assetShadow = assetShadow;

@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.tinybullet.game.view.Assets;
+import com.tinybullet.game.view.Asset;
 import com.tinybullet.game.view.MainScreen;
 
 public class TinyBullet extends Game {
@@ -35,24 +35,24 @@ public class TinyBullet extends Game {
 	}
 
 	private void load() {
-//		assetManager.load(Assets.TEST.filename, Texture.class);
+//		assetManager.load(Asset.TEST.filename, Texture.class);
 
-		assetManager.load(Assets.GROUND.filename, Texture.class);
-		assetManager.load(Assets.WALL1.filename, Texture.class);
-		assetManager.load(Assets.WALL1_SHADOW.filename, Texture.class);
-		assetManager.load(Assets.WALL2.filename, Texture.class);
-		assetManager.load(Assets.WALL2_SHADOW.filename, Texture.class);
-		assetManager.load(Assets.PILLAR1.filename, Texture.class);
-		assetManager.load(Assets.PILLAR1_SHADOW.filename, Texture.class);
-		assetManager.load(Assets.PILLAR2.filename, Texture.class);
-		assetManager.load(Assets.PILLAR2_SHADOW.filename, Texture.class);
-		assetManager.load(Assets.PLAYER1.filename, Texture.class);
-		assetManager.load(Assets.PLAYER2.filename, Texture.class);
-		assetManager.load(Assets.PLAYER_SHADOW.filename, Texture.class);
-		assetManager.load(Assets.PLAYER1_BULLET.filename, Texture.class);
-		assetManager.load(Assets.PLAYER_BULLET_SHADOW.filename, Texture.class);
+		assetManager.load(Asset.GROUND.filename, Texture.class);
+		assetManager.load(Asset.WALL1.filename, Texture.class);
+		assetManager.load(Asset.WALL1_SHADOW.filename, Texture.class);
+		assetManager.load(Asset.WALL2.filename, Texture.class);
+		assetManager.load(Asset.WALL2_SHADOW.filename, Texture.class);
+		assetManager.load(Asset.PILLAR1.filename, Texture.class);
+		assetManager.load(Asset.PILLAR1_SHADOW.filename, Texture.class);
+		assetManager.load(Asset.PILLAR2.filename, Texture.class);
+		assetManager.load(Asset.PILLAR2_SHADOW.filename, Texture.class);
+		assetManager.load(Asset.PLAYER1.filename, Texture.class);
+		assetManager.load(Asset.PLAYER2.filename, Texture.class);
+		assetManager.load(Asset.PLAYER_SHADOW.filename, Texture.class);
+		assetManager.load(Asset.PLAYER1_BULLET.filename, Texture.class);
+		assetManager.load(Asset.PLAYER_BULLET_SHADOW.filename, Texture.class);
 
-		assetManager.load(Assets.GRADIENT.filename, Texture.class);
+		assetManager.load(Asset.GRADIENT.filename, Texture.class);
 
 		assetManager.finishLoading();
 	}

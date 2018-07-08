@@ -10,7 +10,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.physic.PhysicManager;
-import com.tinybullet.game.view.Assets;
+import com.tinybullet.game.view.Asset;
 
 public class Bullet extends Entity {
 
@@ -55,12 +55,12 @@ public class Bullet extends Entity {
 		if(!move && dropped) {
 			Color saveColor = batch.getColor();
 			batch.setColor(Constants.BULLET_PLAYER1_HALO);
-			batch.draw(assetManager.get(Assets.GRADIENT.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f - 3f, 2f/2f, 1f/2f,
+			batch.draw(assetManager.get(Asset.GRADIENT.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f - 3f, 2f/2f, 1f/2f,
 					2f, 16f, 1f, 1f, 0f, 0, 0, 2, 16, false, false);
 			batch.setColor(saveColor);
 		}
 		if(move || dropped) {
-			batch.draw(assetManager.get(Assets.PLAYER1_BULLET.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f, 2f/2f, 1f/2f,
+			batch.draw(assetManager.get(Asset.PLAYER1_BULLET.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f, 2f/2f, 1f/2f,
 					2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
 		}
 	}
@@ -68,7 +68,7 @@ public class Bullet extends Entity {
 	@Override
 	public void renderShadow(Batch batch, AssetManager assetManager) {
 		if(move || dropped) {
-			batch.draw(assetManager.get(Assets.PLAYER_BULLET_SHADOW.filename, Texture.class), body.getPosition().x - 2f / 2f, body.getPosition().y - 1f / 2f - 3f, 2f / 2f, 1f / 2f,
+			batch.draw(assetManager.get(Asset.PLAYER_BULLET_SHADOW.filename, Texture.class), body.getPosition().x - 2f / 2f, body.getPosition().y - 1f / 2f - 3f, 2f / 2f, 1f / 2f,
 					2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
 		}
 	}

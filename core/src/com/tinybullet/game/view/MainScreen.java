@@ -6,19 +6,18 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
+import com.tinybullet.game.network.PartyState;
 import com.tinybullet.game.network.TinyBulletClient;
+import com.tinybullet.game.network.json.AddPlayerJson;
 import com.tinybullet.game.physic.EntityContactListener;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class MainScreen extends ScreenAdapter {
 	private final TinyBullet game;
@@ -28,6 +27,8 @@ public class MainScreen extends ScreenAdapter {
 	private List<Entity> newEntities = new ArrayList<>();
 	private List<Entity> entitiesForRemoval = new ArrayList<>();
 
+	private Player player;
+	private Map<PlayerColor, OtherPlayer> otherPlayers = new HashMap<>();
 	private Bullet redBullet;
 	private Bullet greenBullet;
 
@@ -39,6 +40,7 @@ public class MainScreen extends ScreenAdapter {
 
 
 	// Network
+	private PartyState state = PartyState.INIT;
 	private TinyBulletClient client;
 
 	public MainScreen(TinyBullet game) {
@@ -51,23 +53,24 @@ public class MainScreen extends ScreenAdapter {
 		world.setContactListener(new EntityContactListener(this, world));
 		arena = new Arena(world);
 
-		Player redPlayer = new Player(this, world);
-		entities.add(redPlayer);
-		entities.add(new Pillar(world, Assets.PILLAR1, Assets.PILLAR1_SHADOW, 19,43, 8, 6));
-		entities.add(new Pillar(world, Assets.PILLAR1, Assets.PILLAR1_SHADOW, 45,21, 8, 6));
-		entities.add(new Pillar(world, Assets.PILLAR2, Assets.PILLAR2_SHADOW, 17,21, 12, 6));
-		entities.add(new Pillar(world, Assets.PILLAR2, Assets.PILLAR2_SHADOW, 47,43, 12, 6));
+		player = new Player(this, world);
+		entities.add(player);
+		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 19,43, 8, 6));
+		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 45,21, 8, 6));
+		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 17,21, 12, 6));
+		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 47,43, 12, 6));
 
 		redBullet = new Bullet(world);
 		greenBullet = new Bullet(world);
 
-		redPlayer.setBullet(redBullet);
+		player.setBullet(redBullet);
 
 		entities.add(redBullet);
 		entities.add(greenBullet);
 
 		// Network
-		client = new TinyBulletClient();
+		client = new TinyBulletClient(this);
+		client.send(new AddPlayerJson());
 	}
 
 	@Override
@@ -79,33 +82,39 @@ public class MainScreen extends ScreenAdapter {
 			showDebugPhysics = !showDebugPhysics;
 		}
 
-		entities.removeAll(entitiesForRemoval);
-		entitiesForRemoval.clear();
-		for(Entity entity : entities) {
-			entity.update(delta);
+		PartyState currentState;
+		synchronized (state) {
+			currentState = state;
 		}
-		entities.addAll(newEntities);
-		newEntities.clear();
+		if(currentState == PartyState.PLAY) {
+			entities.removeAll(entitiesForRemoval);
+			entitiesForRemoval.clear();
+			for(Entity entity : entities) {
+				entity.update(delta);
+			}
+			entities.addAll(newEntities);
+			newEntities.clear();
+		}
 
 		Collections.sort(entities);
 
 		batch.begin();
 		// Ground
-		batch.draw(game.getAssetManager().get(Assets.GROUND.filename, Texture.class), 0, 0);
+		batch.draw(game.getAssetManager().get(Asset.GROUND.filename, Texture.class), 0, 0);
 
 		// Shadows
-		batch.draw(game.getAssetManager().get(Assets.WALL1_SHADOW.filename, Texture.class), 0, 0);
+		batch.draw(game.getAssetManager().get(Asset.WALL1_SHADOW.filename, Texture.class), 0, 0);
 		for(Entity entity : entities) {
 			entity.renderShadow(batch, assetManager);
 		}
-		batch.draw(game.getAssetManager().get(Assets.WALL2_SHADOW.filename, Texture.class), 0, 0);
+		batch.draw(game.getAssetManager().get(Asset.WALL2_SHADOW.filename, Texture.class), 0, 0);
 
 		// Entities
-		batch.draw(game.getAssetManager().get(Assets.WALL1.filename, Texture.class), 0, 0);
+		batch.draw(game.getAssetManager().get(Asset.WALL1.filename, Texture.class), 0, 0);
 		for(Entity entity : entities) {
 			entity.render(batch, assetManager);
 		}
-		batch.draw(game.getAssetManager().get(Assets.WALL2.filename, Texture.class), 0, 0);
+		batch.draw(game.getAssetManager().get(Asset.WALL2.filename, Texture.class), 0, 0);
 		batch.end();
 
 		if(showDebugPhysics) {
@@ -127,6 +136,18 @@ public class MainScreen extends ScreenAdapter {
 
 	public TinyBullet getGame() {
 		return game;
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public PartyState getState() {
+		return state;
+	}
+
+	public void setState(PartyState state) {
+		this.state = state;
 	}
 
 	public TinyBulletClient getClient() {

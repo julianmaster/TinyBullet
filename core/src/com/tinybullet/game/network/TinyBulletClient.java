@@ -9,12 +9,18 @@ import com.github.czyzby.websocket.data.WebSocketCloseCode;
 import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.net.ExtendedNet;
 import com.tinybullet.game.Constants;
+import com.tinybullet.game.model.Player;
+import com.tinybullet.game.network.json.PartyStateJson;
+import com.tinybullet.game.network.json.PlayerInfoJson;
+import com.tinybullet.game.view.MainScreen;
 
 public class TinyBulletClient implements Disposable {
 
+	private final MainScreen screen;
 	private WebSocket socket;
 
-	public TinyBulletClient() {
+	public TinyBulletClient(MainScreen screen) {
+		this.screen = screen;
 		socket = ExtendedNet.getNet().newWebSocket("localhost", Constants.PORT);
 		synchronized (socket) {
 			socket.addListener(getListener());
@@ -32,12 +38,19 @@ public class TinyBulletClient implements Disposable {
 
 			@Override
 			protected boolean onMessage(WebSocket webSocket, Object packet) throws WebSocketException {
-//				if(packet instanceof  MyJsonMessage) {
-//					final MyJsonMessage jsonMessage = (MyJsonMessage) packet;
-//					synchronized (message) {
-//						message = jsonMessage.text + jsonMessage.id + "!";
-//					}
-//				}
+				if(packet instanceof PlayerInfoJson) {
+					if(screen.getState() == PartyState.INIT) {
+						synchronized (screen.getPlayer()) {
+							Player player = screen.getPlayer();
+							player.setPosition((PlayerInfoJson)packet);
+						}
+					}
+				}
+				else if(packet instanceof PartyStateJson) {
+					synchronized (screen.getState()) {
+						screen.setState(((PartyStateJson)packet).partyState);
+					}
+				}
 				return FULLY_HANDLED;
 			}
 
