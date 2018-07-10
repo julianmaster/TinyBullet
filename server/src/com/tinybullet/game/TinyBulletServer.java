@@ -34,6 +34,7 @@ public class TinyBulletServer {
 			webSocket.frameHandler(frame -> handleFrame(webSocket, frame));
 			webSocket.endHandler(frame -> handleSocketClosed(webSocket, frame));
 		}).listen(Constants.PORT);
+		System.out.println("Go");
 	}
 
 	private void handleFrame(final ServerWebSocket webSocket, final WebSocketFrame frame) {

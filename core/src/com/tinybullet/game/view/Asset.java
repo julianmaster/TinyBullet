@@ -2,7 +2,7 @@ package com.tinybullet.game.view;
 
 public enum Asset {
 
-	// Asset
+	// Assets
 	GROUND("ground.png"),
 	WALL1("wall1.png"),
 	WALL1_SHADOW("wall1_shadow.png"),
@@ -23,6 +23,9 @@ public enum Asset {
 	PLAYER4_BULLET("player4_bullet.png"),
 	PLAYER_BULLET_SHADOW("player_bullet_shadow.png"),
 	GRADIENT("gradient.png"),
+
+	// Font
+	FONT("TinyFont.fnt"),
 
 	// Test
 	TEST("badlogic.jpg");

@@ -6,12 +6,15 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tinybullet.game.network.TinyBulletClient;
 import com.tinybullet.game.view.Asset;
-import com.tinybullet.game.view.MainScreen;
+import com.tinybullet.game.view.GameScreen;
+import com.tinybullet.game.view.MenuScreen;
 
 public class TinyBullet extends Game {
 	private SpriteBatch batch;
@@ -19,7 +22,15 @@ public class TinyBullet extends Game {
 	private Viewport viewport;
 	private Stage stage;
 	private AssetManager assetManager;
-	
+	private BitmapFont font;
+
+	// Screens
+	private MenuScreen menuScreen;
+	private GameScreen gameScreen;
+
+	// Network
+	private TinyBulletClient client;
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
@@ -27,11 +38,20 @@ public class TinyBullet extends Game {
 		viewport = new FitViewport(Constants.CAMERA_WIDTH, Constants.CAMERA_HEIGHT, camera);
 		assetManager = new AssetManager();
 
+		menuScreen = new MenuScreen(this);
+		gameScreen = new GameScreen(this);
+
+		client = new TinyBulletClient(menuScreen, gameScreen);
+
 		load();
 
 		stage = new Stage(viewport, batch);
 
-		this.setScreen(new MainScreen(this));
+		// Define Font
+		font = assetManager.get(Asset.FONT.filename, BitmapFont.class);
+		font.getData().markupEnabled = true;
+
+		this.setScreen(menuScreen);
 	}
 
 	private void load() {
@@ -51,8 +71,9 @@ public class TinyBullet extends Game {
 		assetManager.load(Asset.PLAYER_SHADOW.filename, Texture.class);
 		assetManager.load(Asset.PLAYER1_BULLET.filename, Texture.class);
 		assetManager.load(Asset.PLAYER_BULLET_SHADOW.filename, Texture.class);
-
 		assetManager.load(Asset.GRADIENT.filename, Texture.class);
+
+		assetManager.load(Asset.FONT.filename, BitmapFont.class);
 
 		assetManager.finishLoading();
 	}
@@ -74,9 +95,11 @@ public class TinyBullet extends Game {
 	@Override
 	public void dispose () {
 		stage.dispose();
-		screen.dispose();
 		batch.dispose();
 		assetManager.dispose();
+		menuScreen.dispose();
+		gameScreen.dispose();
+		client.dispose();
 	}
 
 	public SpriteBatch getBatch() {
@@ -93,5 +116,13 @@ public class TinyBullet extends Game {
 
 	public AssetManager getAssetManager() {
 		return assetManager;
+	}
+
+	public TinyBulletClient getClient() {
+		return client;
+	}
+
+	public BitmapFont getFont() {
+		return font;
 	}
 }

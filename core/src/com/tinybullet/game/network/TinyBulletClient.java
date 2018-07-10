@@ -12,15 +12,18 @@ import com.tinybullet.game.Constants;
 import com.tinybullet.game.model.Player;
 import com.tinybullet.game.network.json.PartyStateJson;
 import com.tinybullet.game.network.json.PlayerInfoJson;
-import com.tinybullet.game.view.MainScreen;
+import com.tinybullet.game.view.GameScreen;
+import com.tinybullet.game.view.MenuScreen;
 
 public class TinyBulletClient implements Disposable {
 
-	private final MainScreen screen;
+	private final MenuScreen menuScreen;
+	private final GameScreen gameScreen;
 	private WebSocket socket;
 
-	public TinyBulletClient(MainScreen screen) {
-		this.screen = screen;
+	public TinyBulletClient(MenuScreen menuScreen, GameScreen gameScreen) {
+		this.menuScreen = menuScreen;
+		this.gameScreen = gameScreen;
 		socket = ExtendedNet.getNet().newWebSocket("localhost", Constants.PORT);
 		synchronized (socket) {
 			socket.addListener(getListener());
@@ -39,16 +42,16 @@ public class TinyBulletClient implements Disposable {
 			@Override
 			protected boolean onMessage(WebSocket webSocket, Object packet) throws WebSocketException {
 				if(packet instanceof PlayerInfoJson) {
-					if(screen.getState() == PartyState.INIT) {
-						synchronized (screen.getPlayer()) {
-							Player player = screen.getPlayer();
+					if(gameScreen.getState() == PartyState.INIT) {
+						synchronized (gameScreen.getPlayer()) {
+							Player player = gameScreen.getPlayer();
 							player.setPosition((PlayerInfoJson)packet);
 						}
 					}
 				}
 				else if(packet instanceof PartyStateJson) {
-					synchronized (screen.getState()) {
-						screen.setState(((PartyStateJson)packet).partyState);
+					synchronized (gameScreen.getState()) {
+						gameScreen.setState(((PartyStateJson)packet).partyState);
 					}
 				}
 				return FULLY_HANDLED;

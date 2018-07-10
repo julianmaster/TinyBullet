@@ -19,7 +19,8 @@ import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.*;
 
-public class MainScreen extends ScreenAdapter {
+public class GameScreen extends ScreenAdapter {
+
 	private final TinyBullet game;
 
 	private Arena arena;
@@ -38,12 +39,10 @@ public class MainScreen extends ScreenAdapter {
 	private boolean showDebugPhysics = true;
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
-
-	// Network
+	// Game state
 	private PartyState state = PartyState.INIT;
-	private TinyBulletClient client;
 
-	public MainScreen(TinyBullet game) {
+	public GameScreen(TinyBullet game) {
 		this.game = game;
 	}
 
@@ -69,8 +68,8 @@ public class MainScreen extends ScreenAdapter {
 		entities.add(greenBullet);
 
 		// Network
-		client = new TinyBulletClient(this);
-		client.send(new AddPlayerJson());
+
+		game.getClient().send(new AddPlayerJson());
 	}
 
 	@Override
@@ -130,8 +129,9 @@ public class MainScreen extends ScreenAdapter {
 
 	@Override
 	public void dispose() {
-		world.dispose();
-		client.dispose();
+		if(world != null) {
+			world.dispose();
+		}
 	}
 
 	public TinyBullet getGame() {
@@ -148,10 +148,6 @@ public class MainScreen extends ScreenAdapter {
 
 	public void setState(PartyState state) {
 		this.state = state;
-	}
-
-	public TinyBulletClient getClient() {
-		return client;
 	}
 
 	public List<Entity> getNewEntities() {

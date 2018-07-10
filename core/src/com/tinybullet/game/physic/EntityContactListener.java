@@ -6,14 +6,14 @@ import com.tinybullet.game.model.Arena;
 import com.tinybullet.game.model.Bullet;
 import com.tinybullet.game.model.Pillar;
 import com.tinybullet.game.model.Player;
-import com.tinybullet.game.view.MainScreen;
+import com.tinybullet.game.view.GameScreen;
 
 public class EntityContactListener implements ContactListener {
 
-	private final MainScreen screen;
+	private final GameScreen screen;
 	private final World world;
 
-	public EntityContactListener(MainScreen screen, World world) {
+	public EntityContactListener(GameScreen screen, World world) {
 		this.screen = screen;
 		this.world = world;
 	}

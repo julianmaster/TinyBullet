@@ -15,11 +15,11 @@ import com.tinybullet.game.network.PlayerPosition;
 import com.tinybullet.game.network.json.PlayerInfoJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
-import com.tinybullet.game.view.MainScreen;
+import com.tinybullet.game.view.GameScreen;
 
 public class Player extends Entity {
 
-	private final MainScreen screen;
+	private final GameScreen screen;
 	private final World world;
 	private final Vector2 size;
 	private final PlayerPosition playerPosition;
@@ -28,7 +28,7 @@ public class Player extends Entity {
 
 	private Bullet bullet;
 
-	public Player(MainScreen screen, World world) {
+	public Player(GameScreen screen, World world) {
 		this.screen = screen;
 		this.world = world;
 		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
