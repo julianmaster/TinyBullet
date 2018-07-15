@@ -9,26 +9,36 @@ import com.github.czyzby.websocket.data.WebSocketCloseCode;
 import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.net.ExtendedNet;
 import com.tinybullet.game.Constants;
+import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.Player;
-import com.tinybullet.game.network.json.PartyStateJson;
-import com.tinybullet.game.network.json.PlayerInfoJson;
+import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
+import com.tinybullet.game.network.json.server.ListPartiesJson;
+import com.tinybullet.game.network.json.server.PartyStateJson;
 import com.tinybullet.game.view.GameScreen;
 import com.tinybullet.game.view.MenuScreen;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 public class TinyBulletClient implements Disposable {
 
+	private final TinyBullet game;
 	private final MenuScreen menuScreen;
 	private final GameScreen gameScreen;
+
+	private ReentrantLock lock = new ReentrantLock();
+
 	private WebSocket socket;
 
-	public TinyBulletClient(MenuScreen menuScreen, GameScreen gameScreen) {
-		this.menuScreen = menuScreen;
-		this.gameScreen = gameScreen;
-		socket = ExtendedNet.getNet().newWebSocket("localhost", Constants.PORT);
-		synchronized (socket) {
-			socket.addListener(getListener());
-			socket.connect();
-		}
+	public TinyBulletClient(TinyBullet game) {
+		this.game = game;
+		this.menuScreen = game.getMenuScreen();
+		this.gameScreen = game.getGameScreen();
+		socket = ExtendedNet.getNet().newWebSocket(Constants.HOST, Constants.PORT);
+
+		lock.lock();
+		socket.addListener(getListener());
+		socket.connect();
+		lock.unlock();
 	}
 
 	private WebSocketListener getListener() {
@@ -41,12 +51,19 @@ public class TinyBulletClient implements Disposable {
 
 			@Override
 			protected boolean onMessage(WebSocket webSocket, Object packet) throws WebSocketException {
-				if(packet instanceof PlayerInfoJson) {
-					if(gameScreen.getState() == PartyState.INIT) {
-						synchronized (gameScreen.getPlayer()) {
-							Player player = gameScreen.getPlayer();
-							player.setPosition((PlayerInfoJson)packet);
-						}
+				if(packet instanceof ListPartiesJson) {
+					menuScreen.getLock().lock();
+					menuScreen.setList(((ListPartiesJson)packet).list);
+					menuScreen.getLock().unlock();
+				}
+				else if(packet instanceof ResponseJoinPartyJson) {
+					if(gameScreen.getState() == PartyState.LOBBY) {
+						gameScreen.getLock().lock();
+						Player player = gameScreen.getPlayer();
+						player.setPosition((ResponseJoinPartyJson) packet);
+						gameScreen.setState(PartyState.WAIT_START);
+						gameScreen.getLock().unlock();
+						game.setScreen(gameScreen);
 					}
 				}
 				else if(packet instanceof PartyStateJson) {
@@ -65,11 +82,11 @@ public class TinyBulletClient implements Disposable {
 	}
 
 	public void send(Object packet) {
-		synchronized (socket) {
-			if(socket.isOpen()) {
-				socket.send(packet);
-			}
+		lock.lock();
+		if(socket.isOpen()) {
+			socket.send(packet);
 		}
+		lock.unlock();
 	}
 
 	@Override

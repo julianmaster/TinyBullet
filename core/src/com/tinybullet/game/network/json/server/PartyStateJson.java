@@ -1,4 +1,4 @@
-package com.tinybullet.game.network.json;
+package com.tinybullet.game.network.json.server;
 
 import com.tinybullet.game.network.PartyState;
 

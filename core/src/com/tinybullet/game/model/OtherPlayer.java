@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.network.PlayerPosition;
-import com.tinybullet.game.network.json.PlayerInfoJson;
+import com.tinybullet.game.network.json.client.PlayerInfoJson;
 import com.tinybullet.game.view.Asset;
 
 public class OtherPlayer extends Entity {

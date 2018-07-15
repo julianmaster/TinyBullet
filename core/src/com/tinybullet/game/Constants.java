@@ -41,4 +41,5 @@ public class Constants {
 
 	// Network
 	public static final int PORT = 8465;
+	public static final String HOST = "localhost";
 }

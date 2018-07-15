@@ -13,15 +13,16 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
 import com.tinybullet.game.network.PartyState;
-import com.tinybullet.game.network.TinyBulletClient;
-import com.tinybullet.game.network.json.AddPlayerJson;
 import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class GameScreen extends ScreenAdapter {
 
 	private final TinyBullet game;
+
+	private ReentrantLock lock = new ReentrantLock();
 
 	private Arena arena;
 	private List<Entity> entities = new ArrayList<>();
@@ -40,14 +41,11 @@ public class GameScreen extends ScreenAdapter {
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
 	// Game state
-	private PartyState state = PartyState.INIT;
+	private PartyState state = PartyState.LOBBY;
 
 	public GameScreen(TinyBullet game) {
 		this.game = game;
-	}
-
-	@Override
-	public void show() {
+		lock.lock();
 		world = new World(new Vector2(), false);
 		world.setContactListener(new EntityContactListener(this, world));
 		arena = new Arena(world);
@@ -58,7 +56,12 @@ public class GameScreen extends ScreenAdapter {
 		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 45,21, 8, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 17,21, 12, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 47,43, 12, 6));
+		lock.unlock();
+	}
 
+	@Override
+	public void show() {
+		lock.lock();
 		redBullet = new Bullet(world);
 		greenBullet = new Bullet(world);
 
@@ -66,10 +69,7 @@ public class GameScreen extends ScreenAdapter {
 
 		entities.add(redBullet);
 		entities.add(greenBullet);
-
-		// Network
-
-		game.getClient().send(new AddPlayerJson());
+		lock.unlock();
 	}
 
 	@Override
@@ -81,10 +81,8 @@ public class GameScreen extends ScreenAdapter {
 			showDebugPhysics = !showDebugPhysics;
 		}
 
-		PartyState currentState;
-		synchronized (state) {
-			currentState = state;
-		}
+		lock.lock();
+		PartyState currentState = state;
 		if(currentState == PartyState.PLAY) {
 			entities.removeAll(entitiesForRemoval);
 			entitiesForRemoval.clear();
@@ -125,6 +123,7 @@ public class GameScreen extends ScreenAdapter {
 		}
 		bodiesScheduledForRemoval.clear();
 		world.step(1/60f, 6, 2);
+		lock.unlock();
 	}
 
 	@Override
@@ -136,6 +135,10 @@ public class GameScreen extends ScreenAdapter {
 
 	public TinyBullet getGame() {
 		return game;
+	}
+
+	public ReentrantLock getLock() {
+		return lock;
 	}
 
 	public Player getPlayer() {

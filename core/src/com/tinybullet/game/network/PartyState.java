@@ -1,6 +1,7 @@
 package com.tinybullet.game.network;
 
 public enum PartyState {
-	INIT,
+	LOBBY,
+	WAIT_START,
 	PLAY;
 }

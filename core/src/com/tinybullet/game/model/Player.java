@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.network.PlayerPosition;
-import com.tinybullet.game.network.json.PlayerInfoJson;
+import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
 import com.tinybullet.game.view.GameScreen;
@@ -107,8 +107,7 @@ public class Player extends Entity {
 		return body.getPosition();
 	}
 
-	public void setPosition(PlayerInfoJson info) {
-		System.out.println(info.x+" - "+info.y);
+	public void setPosition(ResponseJoinPartyJson info) {
 		body.setTransform(info.x, info.y, 0f);
 		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
 	}

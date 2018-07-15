@@ -4,12 +4,11 @@ import com.github.czyzby.websocket.WebSocket;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
 import com.tinybullet.game.network.Party;
-import com.tinybullet.game.network.PartyState;
-import com.tinybullet.game.network.json.AddPlayerJson;
-import com.tinybullet.game.network.json.ListPartyJson;
-import com.tinybullet.game.network.json.PartyStateJson;
-import com.tinybullet.game.network.json.PlayerInfoJson;
-import io.vertx.core.Handler;
+import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
+import com.tinybullet.game.network.json.client.PlayerInfoJson;
+import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
+import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
+import com.tinybullet.game.network.json.server.ListPartiesJson;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -34,30 +33,54 @@ public class TinyBulletServer {
 			webSocket.frameHandler(frame -> handleFrame(webSocket, frame));
 			webSocket.endHandler(frame -> handleSocketClosed(webSocket, frame));
 		}).listen(Constants.PORT);
+		parties.put(1, new Party());
+		parties.put(2, new Party());
+		parties.put(3, new Party());
+		parties.put(5, new Party());
 		System.out.println("Go");
 	}
 
 	private void handleFrame(final ServerWebSocket webSocket, final WebSocketFrame frame) {
 		final Object request = serializer.deserialize(frame.binaryData().getBytes());
-		if(request instanceof AddPlayerJson) {
-			AddPlayerJson addPlayerJson = (AddPlayerJson)request;
-			Party party = parties.get(addPlayerJson.party);
-			if(party == null) {
-				return;
-			}
-			PlayerInfoJson playerInfoJson = party.addPlayer();
-			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(playerInfoJson)));
 
-			PartyStateJson partyStateJson = new PartyStateJson();
-			partyStateJson.partyState = PartyState.PLAY;
-			vertx.setTimer(4000L, new Handler<Long>() {
-				@Override
-				public void handle(Long event) {
-					webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(partyStateJson)));
-				}
-			});
+		if(request instanceof RefreshListPartiesJson) {
+			ListPartiesJson listPartiesJson = new ListPartiesJson();
+			int[] list = new int[parties.size()];
+			int i = 0;
+			for(Integer party : parties.keySet()) {
+				list[i] = party;
+				i++;
+			}
+			listPartiesJson.list = list;
+			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(listPartiesJson)));
 		}
-		if(request instanceof PlayerInfoJson) {
+		else if(request instanceof RequestJoinPartyJson) {
+			RequestJoinPartyJson requestJoinPartyJson = (RequestJoinPartyJson)request;
+			Party party = parties.get(requestJoinPartyJson.party);
+
+			ResponseJoinPartyJson responseJoinPartyJson;
+			if(party == null) {
+				responseJoinPartyJson = new ResponseJoinPartyJson();
+				responseJoinPartyJson.join = false;
+			}
+			else {
+				responseJoinPartyJson = party.addPlayer();
+			}
+
+			System.out.println(responseJoinPartyJson.join);
+
+			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
+
+//			PartyStateJson partyStateJson = new PartyStateJson();
+//			partyStateJson.partyState = PartyState.PLAY;
+//			vertx.setTimer(4000L, new Handler<Long>() {
+//				@Override
+//				public void handle(Long event) {
+//					webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(partyStateJson)));
+//				}
+//			});
+		}
+		else if(request instanceof PlayerInfoJson) {
 			PlayerInfoJson playerInfoJson = (PlayerInfoJson)request;
 			Party party = parties.get(playerInfoJson.party);
 			if(party == null) {
@@ -73,7 +96,7 @@ public class TinyBulletServer {
 
 	}
 
-	private ListPartyJson listParties() {
+	private ListPartiesJson listParties() {
 		int[] list = new int[parties.size()];
 
 		synchronized (parties) {
@@ -83,9 +106,9 @@ public class TinyBulletServer {
 				i++;
 			}
 		}
-		ListPartyJson listPartyJson = new ListPartyJson();
-		listPartyJson.list = list;
-		return listPartyJson;
+		ListPartiesJson listPartiesJson = new ListPartiesJson();
+		listPartiesJson.list = list;
+		return listPartiesJson;
 	}
 
 	public static void main (String[] arg) throws Exception {

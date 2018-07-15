@@ -41,11 +41,12 @@ public class TinyBullet extends Game {
 		menuScreen = new MenuScreen(this);
 		gameScreen = new GameScreen(this);
 
-		client = new TinyBulletClient(menuScreen, gameScreen);
+		client = new TinyBulletClient(this);
 
 		load();
 
 		stage = new Stage(viewport, batch);
+		Gdx.input.setInputProcessor(stage);
 
 		// Define Font
 		font = assetManager.get(Asset.FONT.filename, BitmapFont.class);
@@ -124,5 +125,13 @@ public class TinyBullet extends Game {
 
 	public BitmapFont getFont() {
 		return font;
+	}
+
+	public MenuScreen getMenuScreen() {
+		return menuScreen;
+	}
+
+	public GameScreen getGameScreen() {
+		return gameScreen;
 	}
 }
