@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tinybullet.game.network.TinyBulletClient;
 import com.tinybullet.game.view.Asset;
+import com.tinybullet.game.view.CustomColor;
 import com.tinybullet.game.view.GameScreen;
 import com.tinybullet.game.view.MenuScreen;
 
@@ -81,7 +82,7 @@ public class TinyBullet extends Game {
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(CustomColor.BLUE2.r, CustomColor.BLUE2.g, CustomColor.BLUE2.b, CustomColor.BLUE2.a);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		stage.act(Gdx.graphics.getDeltaTime());

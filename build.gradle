@@ -76,7 +76,6 @@ project(":server") {
 
     dependencies {
 		compile project(":core")
-        compile "io.vertx:vertx-core:$vertxVersion"
         compile "com.github.czyzby:gdx-websocket:$libVersion.$gdxVersion-SNAPSHOT"
 
     }
@@ -90,6 +89,7 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         compile "com.github.czyzby:gdx-websocket:$libVersion.$gdxVersion-SNAPSHOT"
+        compile "io.vertx:vertx-core:$vertxVersion"
         
     }
 }

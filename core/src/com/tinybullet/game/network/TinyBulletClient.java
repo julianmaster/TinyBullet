@@ -25,7 +25,7 @@ public class TinyBulletClient implements Disposable {
 	private final MenuScreen menuScreen;
 	private final GameScreen gameScreen;
 
-	private ReentrantLock lock = new ReentrantLock();
+	private final ReentrantLock lock = new ReentrantLock();
 
 	private WebSocket socket;
 
@@ -67,9 +67,9 @@ public class TinyBulletClient implements Disposable {
 					}
 				}
 				else if(packet instanceof PartyStateJson) {
-					synchronized (gameScreen.getState()) {
-						gameScreen.setState(((PartyStateJson)packet).partyState);
-					}
+					gameScreen.getLock().lock();
+					gameScreen.setState(((PartyStateJson)packet).partyState);
+					gameScreen.getLock().unlock();
 				}
 				return FULLY_HANDLED;
 			}

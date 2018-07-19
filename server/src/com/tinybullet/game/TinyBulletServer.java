@@ -19,11 +19,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TinyBulletServer {
+
 	private final Vertx vertx = Vertx.vertx();
 	private final Serializer serializer = new JsonSerializer();
-	private List<WebSocket> webSockets = new ArrayList<>();
+	private final ReentrantLock lock = new ReentrantLock();
+
+	private List<ServerWebSocket> webSockets = new ArrayList<>();
 	private Map<Integer, Party> parties = new LinkedHashMap<>();
 
 	private void launch() {
@@ -44,18 +48,23 @@ public class TinyBulletServer {
 		final Object request = serializer.deserialize(frame.binaryData().getBytes());
 
 		if(request instanceof RefreshListPartiesJson) {
-			ListPartiesJson listPartiesJson = new ListPartiesJson();
 			int[] list = new int[parties.size()];
+
+			lock.lock();
 			int i = 0;
-			for(Integer party : parties.keySet()) {
-				list[i] = party;
+			for(Map.Entry<Integer, Party> party : parties.entrySet()) {
+				list[i] = party.getKey();
 				i++;
 			}
+			lock.unlock();
+
+			ListPartiesJson listPartiesJson = new ListPartiesJson();
 			listPartiesJson.list = list;
 			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(listPartiesJson)));
 		}
 		else if(request instanceof RequestJoinPartyJson) {
 			RequestJoinPartyJson requestJoinPartyJson = (RequestJoinPartyJson)request;
+			lock.lock();
 			Party party = parties.get(requestJoinPartyJson.party);
 
 			ResponseJoinPartyJson responseJoinPartyJson;
@@ -64,10 +73,10 @@ public class TinyBulletServer {
 				responseJoinPartyJson.join = false;
 			}
 			else {
-				responseJoinPartyJson = party.addPlayer();
+				responseJoinPartyJson = party.addPlayer(webSocket);
 			}
-
-			System.out.println(responseJoinPartyJson.join);
+			lock.unlock();
+			System.out.println("Join party "+requestJoinPartyJson.party+": "+responseJoinPartyJson.join);
 
 			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
 
@@ -81,34 +90,24 @@ public class TinyBulletServer {
 //			});
 		}
 		else if(request instanceof PlayerInfoJson) {
-			PlayerInfoJson playerInfoJson = (PlayerInfoJson)request;
-			Party party = parties.get(playerInfoJson.party);
-			if(party == null) {
-				return;
-			}
-			party.changePlayerPosition(playerInfoJson);
-			// TODO send to others members of party
-			System.out.println(playerInfoJson.playerColor.name()+": ["+ playerInfoJson.x+"; "+ playerInfoJson.y+"]");
+//			PlayerInfoJson playerInfoJson = (PlayerInfoJson)request;
+//			Party party = parties.get(playerInfoJson.party);
+//			if(party == null) {
+//				return;
+//			}
+//			party.changePlayerPosition(playerInfoJson);
+//			// TODO send to others members of party
+//			System.out.println(playerInfoJson.playerColor.name()+": ["+ playerInfoJson.x+"; "+ playerInfoJson.y+"]");
 		}
 	}
 
 	private void handleSocketClosed(final ServerWebSocket webSocket, final Void frame) {
-
-	}
-
-	private ListPartiesJson listParties() {
-		int[] list = new int[parties.size()];
-
-		synchronized (parties) {
-			int i = 0;
-			for(Map.Entry<Integer, Party> party : parties.entrySet()) {
-				list[i] = party.getKey();
-				i++;
-			}
+		lock.lock();
+		webSockets.remove(webSocket);
+		for(Party party : parties.values()) {
+			party.removePlayer(webSocket);
 		}
-		ListPartiesJson listPartiesJson = new ListPartiesJson();
-		listPartiesJson.list = list;
-		return listPartiesJson;
+		lock.unlock();
 	}
 
 	public static void main (String[] arg) throws Exception {
