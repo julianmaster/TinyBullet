@@ -9,11 +9,14 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
+import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
 import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PartyScreen extends ScreenAdapter {
@@ -23,6 +26,9 @@ public class PartyScreen extends ScreenAdapter {
 	private ReentrantLock lock = new ReentrantLock();
 
 	private GlyphLayout layout = new GlyphLayout();
+
+	private PlayerColor[] players;
+	private PlayerColor playerColor = PlayerColor.GREEN;
 
 	public PartyScreen(TinyBullet game) {
 		this.game = game;
@@ -47,7 +53,19 @@ public class PartyScreen extends ScreenAdapter {
 
 		lock.lock();
 
-		// TODO show party informations
+		for(int i = 0; i < players.length; i++) {
+			PlayerColor partyPlayerColor = players[i];
+			if(playerColor == partyPlayerColor) {
+				info = "You";
+				cache.setText(info, 2, Constants.CAMERA_HEIGHT - layout.height / 2 - 7 - 7*i);
+				cache.draw(batch);
+			}
+			else {
+				info = "Player "+i;
+				cache.setText(info, 2, Constants.CAMERA_HEIGHT - layout.height / 2 - 7 - 7*i);
+				cache.draw(batch);
+			}
+		}
 
 		lock.unlock();
 		batch.end();
@@ -67,5 +85,13 @@ public class PartyScreen extends ScreenAdapter {
 
 	public ReentrantLock getLock() {
 		return lock;
+	}
+
+	public void setPlayers(PlayerColor[] players) {
+		this.players = players;
+	}
+
+	public void setPlayerColor(PlayerColor playerColor) {
+		this.playerColor = playerColor;
 	}
 }

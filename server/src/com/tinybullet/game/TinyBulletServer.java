@@ -3,12 +3,14 @@ package com.tinybullet.game;
 import com.github.czyzby.websocket.WebSocket;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
+import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.Party;
 import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
 import com.tinybullet.game.network.json.client.PlayerInfoJson;
 import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
 import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
 import com.tinybullet.game.network.json.server.ListPartiesJson;
+import com.tinybullet.game.util.Pair;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -67,18 +69,24 @@ public class TinyBulletServer {
 			lock.lock();
 			Party party = parties.get(requestJoinPartyJson.party);
 
-			ResponseJoinPartyJson responseJoinPartyJson;
-			if(party == null) {
-				responseJoinPartyJson = new ResponseJoinPartyJson();
-				responseJoinPartyJson.join = false;
+			boolean playerAdded = party != null && party.addPlayer(webSocket);
+
+			if(playerAdded) {
+				for(Map.Entry<PlayerColor, Pair<ServerWebSocket, Boolean>> player : party.getPlayers().entrySet()) {
+					ResponseJoinPartyJson responseJoinPartyJson = new ResponseJoinPartyJson();
+					responseJoinPartyJson.join = true;
+					responseJoinPartyJson.playerColor = player.getKey();
+					responseJoinPartyJson.players = party.getPlayers().keySet().toArray(new PlayerColor[party.getPlayers().size()]);
+					player.getValue().key.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
+				}
 			}
 			else {
-				responseJoinPartyJson = party.addPlayer(webSocket);
+				ResponseJoinPartyJson responseJoinPartyJson = new ResponseJoinPartyJson();
+				responseJoinPartyJson.join = false;
+				webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
 			}
-			lock.unlock();
-			System.out.println("Join party "+requestJoinPartyJson.party+": "+responseJoinPartyJson.join);
 
-			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
+			lock.unlock();
 
 //			PartyStateJson partyStateJson = new PartyStateJson();
 //			partyStateJson.partyState = PartyState.PLAY;

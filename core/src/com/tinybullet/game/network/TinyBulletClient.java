@@ -16,6 +16,7 @@ import com.tinybullet.game.network.json.server.ListPartiesJson;
 import com.tinybullet.game.network.json.server.PartyStateJson;
 import com.tinybullet.game.view.GameScreen;
 import com.tinybullet.game.view.MenuScreen;
+import com.tinybullet.game.view.PartyScreen;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,6 +24,7 @@ public class TinyBulletClient implements Disposable {
 
 	private final TinyBullet game;
 	private final MenuScreen menuScreen;
+	private final PartyScreen partyScreen;
 	private final GameScreen gameScreen;
 
 	private final ReentrantLock lock = new ReentrantLock();
@@ -32,6 +34,7 @@ public class TinyBulletClient implements Disposable {
 	public TinyBulletClient(TinyBullet game) {
 		this.game = game;
 		this.menuScreen = game.getMenuScreen();
+		this.partyScreen = game.getPartyScreen();
 		this.gameScreen = game.getGameScreen();
 		socket = ExtendedNet.getNet().newWebSocket(Constants.HOST, Constants.PORT);
 
@@ -57,14 +60,12 @@ public class TinyBulletClient implements Disposable {
 					menuScreen.getLock().unlock();
 				}
 				else if(packet instanceof ResponseJoinPartyJson) {
-					if(gameScreen.getState() == PartyState.LOBBY) {
-						gameScreen.getLock().lock();
-						Player player = gameScreen.getPlayer();
-						player.setPosition((ResponseJoinPartyJson) packet);
-						gameScreen.setState(PartyState.WAIT_START);
-						gameScreen.getLock().unlock();
-						game.setScreen(gameScreen);
-					}
+					ResponseJoinPartyJson responseJoinPartyJson = (ResponseJoinPartyJson)packet;
+					partyScreen.getLock().lock();
+					partyScreen.setPlayers(responseJoinPartyJson.players);
+					partyScreen.setPlayerColor(responseJoinPartyJson.playerColor);
+					partyScreen.getLock().unlock();
+					game.setScreen(partyScreen);
 				}
 				else if(packet instanceof PartyStateJson) {
 					gameScreen.getLock().lock();

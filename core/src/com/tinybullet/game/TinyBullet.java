@@ -12,10 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.tinybullet.game.network.TinyBulletClient;
-import com.tinybullet.game.view.Asset;
-import com.tinybullet.game.view.CustomColor;
-import com.tinybullet.game.view.GameScreen;
-import com.tinybullet.game.view.MenuScreen;
+import com.tinybullet.game.view.*;
 
 public class TinyBullet extends Game {
 	private SpriteBatch batch;
@@ -27,6 +24,7 @@ public class TinyBullet extends Game {
 
 	// Screens
 	private MenuScreen menuScreen;
+	private PartyScreen partyScreen;
 	private GameScreen gameScreen;
 
 	// Network
@@ -40,6 +38,7 @@ public class TinyBullet extends Game {
 		assetManager = new AssetManager();
 
 		menuScreen = new MenuScreen(this);
+		partyScreen = new PartyScreen(this);
 		gameScreen = new GameScreen(this);
 
 		client = new TinyBulletClient(this);
@@ -130,6 +129,10 @@ public class TinyBullet extends Game {
 
 	public MenuScreen getMenuScreen() {
 		return menuScreen;
+	}
+
+	public PartyScreen getPartyScreen() {
+		return partyScreen;
 	}
 
 	public GameScreen getGameScreen() {

@@ -13,4 +13,8 @@ public enum PlayerColor {
 	PlayerColor(Asset player) {
 		this.player = player;
 	}
+
+	public PlayerColor[] order() {
+		return new PlayerColor[]{RED, GREEN, YELLOW, PURPLE};
+	}
 }
