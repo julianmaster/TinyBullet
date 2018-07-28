@@ -1,5 +1,5 @@
 package com.tinybullet.game.network.json.server;
 
-public class ListPartiesJson {
+public class ResponseListPartiesJson {
 	public int[] list;
 }

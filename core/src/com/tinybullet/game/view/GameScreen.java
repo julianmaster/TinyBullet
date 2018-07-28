@@ -59,6 +59,13 @@ public class GameScreen extends ScreenAdapter {
 		lock.unlock();
 	}
 
+	public void init(PlayerColor color, Vector2 position) {
+		player.setColor(color);
+		player.setPosition(position);
+
+		// TODO remove old OtherPlayer from stage list
+	}
+
 	@Override
 	public void show() {
 		lock.lock();

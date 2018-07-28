@@ -71,7 +71,6 @@ public class MenuScreen extends ScreenAdapter {
 		for(int i = 0; i < list.length; i++) {
 			TextActionButton button = new TextActionButton("join", game);
 			button.setPosition(Constants.CAMERA_WIDTH - 14, Constants.CAMERA_HEIGHT - layout.height / 2 - 10 - 7*i);
-			game.getStage().addActor(button);
 			final int party = i;
 			button.addListener(new InputListener() {
 				@Override
@@ -83,6 +82,7 @@ public class MenuScreen extends ScreenAdapter {
 				}
 			});
 			listButtons.add(button);
+			game.getStage().addActor(button);
 		}
 	}
 

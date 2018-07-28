@@ -1,16 +1,18 @@
 package com.tinybullet.game;
 
-import com.github.czyzby.websocket.WebSocket;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.Party;
 import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
-import com.tinybullet.game.network.json.client.PlayerInfoJson;
 import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
-import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
-import com.tinybullet.game.network.json.server.ListPartiesJson;
+import com.tinybullet.game.network.json.client.RequestPlayerStatusPartyJson;
+import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
+import com.tinybullet.game.network.json.server.ResponsePlayerStatusPartyJson;
+import com.tinybullet.game.network.json.server.ResponseListPartiesJson;
+import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.util.Pair;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -60,9 +62,9 @@ public class TinyBulletServer {
 			}
 			lock.unlock();
 
-			ListPartiesJson listPartiesJson = new ListPartiesJson();
-			listPartiesJson.list = list;
-			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(listPartiesJson)));
+			ResponseListPartiesJson responseListPartiesJson = new ResponseListPartiesJson();
+			responseListPartiesJson.list = list;
+			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseListPartiesJson)));
 		}
 		else if(request instanceof RequestJoinPartyJson) {
 			RequestJoinPartyJson requestJoinPartyJson = (RequestJoinPartyJson)request;
@@ -72,33 +74,61 @@ public class TinyBulletServer {
 			boolean playerAdded = party != null && party.addPlayer(webSocket);
 
 			if(playerAdded) {
-				for(Map.Entry<PlayerColor, Pair<ServerWebSocket, Boolean>> player : party.getPlayers().entrySet()) {
-					ResponseJoinPartyJson responseJoinPartyJson = new ResponseJoinPartyJson();
-					responseJoinPartyJson.join = true;
-					responseJoinPartyJson.playerColor = player.getKey();
-					responseJoinPartyJson.players = party.getPlayers().keySet().toArray(new PlayerColor[party.getPlayers().size()]);
-					player.getValue().key.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
-				}
+				sendResponsePlayerStatusPartyJson(party);
 			}
 			else {
-				ResponseJoinPartyJson responseJoinPartyJson = new ResponseJoinPartyJson();
-				responseJoinPartyJson.join = false;
-				webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseJoinPartyJson)));
+				ResponsePlayerStatusPartyJson responsePlayerStatusPartyJson = new ResponsePlayerStatusPartyJson();
+				responsePlayerStatusPartyJson.join = false;
+				webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePlayerStatusPartyJson)));
 			}
 
 			lock.unlock();
-
-//			PartyStateJson partyStateJson = new PartyStateJson();
-//			partyStateJson.partyState = PartyState.PLAY;
-//			vertx.setTimer(4000L, new Handler<Long>() {
-//				@Override
-//				public void handle(Long event) {
-//					webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(partyStateJson)));
-//				}
-//			});
 		}
-		else if(request instanceof PlayerInfoJson) {
-//			PlayerInfoJson playerInfoJson = (PlayerInfoJson)request;
+		else if(request instanceof RequestPlayerStatusPartyJson) {
+			lock.lock();
+			for(Party party : parties.values()) {
+				if(party.getPlayers().containsKey(webSocket)) {
+
+					party.playerStatus(webSocket, ((RequestPlayerStatusPartyJson)request).ready);
+
+					// Check if all players are readies to start party
+					boolean runParty = true;
+					for(Pair<PlayerColor, Boolean> player : party.getPlayers().values()) {
+						runParty = runParty && player.value;
+					}
+
+					if(runParty) {
+						// All players are readies
+						ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = party.waitStartParty();
+						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+							serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePositionsPlayersPartyJson)));
+						}
+
+						// Send a ResponsePartyStateJson for start the game after 3 seconds
+						vertx.setTimer(3000L, new Handler<Long>() {
+							@Override
+							public void handle(Long event) {
+								lock.lock();
+								ResponsePartyStateJson responsePartyStateJson = party.startParty();
+								for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+									serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyStateJson)));
+								}
+								lock.unlock();
+							}
+						});
+					}
+					else {
+						// One or mores players aren't ready
+						sendResponsePlayerStatusPartyJson(party);
+					}
+
+					return;
+				}
+			}
+			lock.unlock();
+		}
+//		else if(request instanceof ) {
+//			 playerInfoJson = ()request;
 //			Party party = parties.get(playerInfoJson.party);
 //			if(party == null) {
 //				return;
@@ -106,7 +136,13 @@ public class TinyBulletServer {
 //			party.changePlayerPosition(playerInfoJson);
 //			// TODO send to others members of party
 //			System.out.println(playerInfoJson.playerColor.name()+": ["+ playerInfoJson.x+"; "+ playerInfoJson.y+"]");
-		}
+//		}
+
+
+
+
+
+
 	}
 
 	private void handleSocketClosed(final ServerWebSocket webSocket, final Void frame) {
@@ -116,6 +152,21 @@ public class TinyBulletServer {
 			party.removePlayer(webSocket);
 		}
 		lock.unlock();
+	}
+
+	private void sendResponsePlayerStatusPartyJson(Party party) {
+		for(Map.Entry<ServerWebSocket, Pair<PlayerColor, Boolean>> player : party.getPlayers().entrySet()) {
+			ResponsePlayerStatusPartyJson responsePlayerStatusPartyJson = new ResponsePlayerStatusPartyJson();
+			responsePlayerStatusPartyJson.join = true;
+			responsePlayerStatusPartyJson.playerColor = player.getValue().key;
+			responsePlayerStatusPartyJson.players = party.getPlayers().keySet().toArray(new PlayerColor[party.getPlayers().size()]);
+			boolean[] readies = new boolean[responsePlayerStatusPartyJson.players.length];
+			for(int i = 0 ; i< readies.length; i++) {
+				readies[i] = party.getPlayers().get(responsePlayerStatusPartyJson.players[i]).value;
+			}
+			responsePlayerStatusPartyJson.readies = readies;
+			player.getKey().writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePlayerStatusPartyJson)));
+		}
 	}
 
 	public static void main (String[] arg) throws Exception {

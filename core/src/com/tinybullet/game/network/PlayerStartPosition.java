@@ -1,14 +1,16 @@
 package com.tinybullet.game.network;
 
+import com.badlogic.gdx.math.Vector2;
+
 public enum PlayerStartPosition {
-	RED(new PlayerPosition(16, 14)),
-	GREEN(new PlayerPosition(48, 52)),
-	YELLOW(new PlayerPosition(0, 0)),
-	PURPLE(new PlayerPosition(0, 0));
+	RED(new Vector2(16f, 14f)),
+	GREEN(new Vector2(48f, 52f)),
+	YELLOW(new Vector2(0f, 0f)),
+	PURPLE(new Vector2(0f, 0f));
 
-	public PlayerPosition position;
+	public Vector2 position;
 
-	PlayerStartPosition(PlayerPosition position) {
+	PlayerStartPosition(Vector2 position) {
 		this.position = position;
 	}
 }

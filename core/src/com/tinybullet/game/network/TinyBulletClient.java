@@ -10,10 +10,9 @@ import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.net.ExtendedNet;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
-import com.tinybullet.game.model.Player;
-import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
-import com.tinybullet.game.network.json.server.ListPartiesJson;
-import com.tinybullet.game.network.json.server.PartyStateJson;
+import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
+import com.tinybullet.game.network.json.server.ResponsePlayerStatusPartyJson;
+import com.tinybullet.game.network.json.server.ResponseListPartiesJson;
 import com.tinybullet.game.view.GameScreen;
 import com.tinybullet.game.view.MenuScreen;
 import com.tinybullet.game.view.PartyScreen;
@@ -54,22 +53,25 @@ public class TinyBulletClient implements Disposable {
 
 			@Override
 			protected boolean onMessage(WebSocket webSocket, Object packet) throws WebSocketException {
-				if(packet instanceof ListPartiesJson) {
+				if(packet instanceof ResponseListPartiesJson) {
 					menuScreen.getLock().lock();
-					menuScreen.setList(((ListPartiesJson)packet).list);
+					menuScreen.setList(((ResponseListPartiesJson)packet).list);
 					menuScreen.getLock().unlock();
 				}
-				else if(packet instanceof ResponseJoinPartyJson) {
-					ResponseJoinPartyJson responseJoinPartyJson = (ResponseJoinPartyJson)packet;
+				else if(packet instanceof ResponsePlayerStatusPartyJson) {
+					ResponsePlayerStatusPartyJson responsePlayerStatusPartyJson = (ResponsePlayerStatusPartyJson)packet;
 					partyScreen.getLock().lock();
-					partyScreen.setPlayers(responseJoinPartyJson.players);
-					partyScreen.setPlayerColor(responseJoinPartyJson.playerColor);
+					partyScreen.setPlayers(responsePlayerStatusPartyJson.players);
+					partyScreen.setReadies(responsePlayerStatusPartyJson.readies);
+					partyScreen.setPlayerColor(responsePlayerStatusPartyJson.playerColor);
 					partyScreen.getLock().unlock();
-					game.setScreen(partyScreen);
+					if(game.getScreen() != partyScreen) {
+						game.setScreen(partyScreen);
+					}
 				}
-				else if(packet instanceof PartyStateJson) {
+				else if(packet instanceof ResponsePartyStateJson) {
 					gameScreen.getLock().lock();
-					gameScreen.setState(((PartyStateJson)packet).partyState);
+					gameScreen.setState(((ResponsePartyStateJson)packet).partyState);
 					gameScreen.getLock().unlock();
 				}
 				return FULLY_HANDLED;

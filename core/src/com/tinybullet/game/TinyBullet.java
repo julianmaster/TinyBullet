@@ -43,6 +43,7 @@ public class TinyBullet extends Game {
 
 		client = new TinyBulletClient(this);
 
+		CustomColor.reset();
 		load();
 
 		stage = new Stage(viewport, batch);

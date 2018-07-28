@@ -12,8 +12,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.network.PlayerPosition;
-import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
-import com.tinybullet.game.network.json.server.ResponseStartPartyJson;
+import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
 import com.tinybullet.game.view.GameScreen;
@@ -22,8 +21,12 @@ public class Player extends Entity {
 
 	private final GameScreen screen;
 	private final World world;
+
+	private PlayerColor color;
+	private final Vector2 position;
 	private final Vector2 size;
-	private final PlayerPosition playerPosition;
+
+
 	private Body body;
 	private Body bulletCollisionBody;
 
@@ -36,7 +39,7 @@ public class Player extends Entity {
 		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, this, world);
 		body.setLinearVelocity((float)0f, (float)0f);
 		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, this, world);
-		this.playerPosition = new PlayerPosition(48, 52);
+		this.position = new Vector2(48, 52);
 	}
 
 	@Override
@@ -76,14 +79,15 @@ public class Player extends Entity {
 		body.setLinearVelocity((float)x * Constants.PLAYER_SPEED, (float)y * Constants.PLAYER_SPEED);
 		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
 		if(y != 0.0f || x != 0.0f) {
-			playerPosition.x = body.getPosition().x;
-			playerPosition.y = body.getPosition().y;
+			position.x = body.getPosition().x;
+			position.y = body.getPosition().y;
 //			screen.getClient().send(playerPosition);
 		}
 	}
 
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
+		// TODO change player for match color set
 		batch.draw(assetManager.get(Asset.PLAYER1.filename, Texture.class), body.getPosition().x - Constants.PLAYER_COLLISION_WIDTH_OFFSET - Constants.PLAYER_COLLISION_WIDTH / 2f,
 				body.getPosition().y - Constants.PLAYER_COLLISION_HEIGHT_OFFSET - Constants.PLAYER_COLLISION_HEIGHT /2f);
 	}
@@ -108,13 +112,13 @@ public class Player extends Entity {
 		return body.getPosition();
 	}
 
-	public void setPosition(ResponseStartPartyJson info) {
-		body.setTransform(info.x, info.y, 0f);
+	public void setPosition(Vector2 position) {
+		body.setTransform(position.x, position.y, 0f);
 		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
 	}
 
-	public void setColor() {
-
+	public void setColor(PlayerColor color) {
+		this.color = color;
 	}
 
 	@Override

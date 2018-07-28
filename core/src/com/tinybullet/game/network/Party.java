@@ -1,19 +1,19 @@
 package com.tinybullet.game.network;
 
+import com.badlogic.gdx.math.Vector2;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.json.client.RequestPlayerStatusPartyJson;
-import com.tinybullet.game.network.json.server.ResponseJoinPartyJson;
-import com.tinybullet.game.network.json.server.ResponseStartPartyJson;
+import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
+import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.util.Pair;
 import io.vertx.core.http.ServerWebSocket;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Party {
-	private PartyState state = PartyState.WAIT_START;
-	private Map<PlayerColor, Pair<ServerWebSocket, Boolean>> players = new HashMap<>();
-	private Map<PlayerColor, PlayerPosition> positions = new HashMap<>();
+	private PartyState state = PartyState.LOBBY;
+	private Map<ServerWebSocket, Pair<PlayerColor, Boolean>> players = new HashMap<>();
+	private Map<PlayerColor, Vector2> positions = new HashMap<>();
 //	private Map<BulletColor, PlayerColor> bulletTaked = new HashMap<>();
 
 	public boolean addPlayer(ServerWebSocket webSocket) {
@@ -37,48 +37,54 @@ public class Party {
 	}
 
 	private void initPlayerPosition(ServerWebSocket webSocket, PlayerColor playerColor, PlayerStartPosition playerStartPosition) {
-		players.put(playerColor, new Pair<>(webSocket, false));
-		PlayerPosition playerPosition = new PlayerPosition(playerStartPosition.position.x, playerStartPosition.position.y);
+		players.put(webSocket, new Pair<>(playerColor, false));
+		Vector2 playerPosition = new Vector2(playerStartPosition.position.x, playerStartPosition.position.y);
 		positions.put(playerColor, playerPosition);
 	}
 
-	private ResponseStartPartyJson startParty(PlayerColor playerColor) {
-		PlayerPosition playerPosition = positions.get(playerColor);
-
-		ResponseStartPartyJson responseStartPartyJson = new ResponseStartPartyJson();
-		responseStartPartyJson.playerColor = playerColor;
-		responseStartPartyJson.x = playerPosition.x;
-		responseStartPartyJson.y = playerPosition.y;
-
-		return responseStartPartyJson;
+	public ResponsePositionsPlayersPartyJson waitStartParty() {
+		state = PartyState.WAIT_START;
+		ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = new ResponsePositionsPlayersPartyJson();
+		responsePositionsPlayersPartyJson.positions = positions;
+		return responsePositionsPlayersPartyJson;
 	}
 
-//	public void changePlayerPosition(PlayerInfoJson playerInfoJson) {
-//		PlayerPosition playerPosition = positions.get(playerInfoJson.playerColor);
-//		playerPosition.x = playerInfoJson.x;
-//		playerPosition.y = playerInfoJson.y;
-//		change = true;
-//	}
+	public ResponsePartyStateJson startParty() {
+		state = PartyState.PLAY;
+		ResponsePartyStateJson responsePartyStateJson = new ResponsePartyStateJson();
+		responsePartyStateJson.partyState = state;
+		return responsePartyStateJson;
+	}
 
-	public void playerReady(ServerWebSocket webSocket, RequestPlayerStatusPartyJson requestPlayerStatusPartyJson) {
-		for(Pair<ServerWebSocket, Boolean> pair : players.values()) {
-			if(webSocket == pair.key) {
-				pair.value = requestPlayerStatusPartyJson.ready;
-				return;
-			}
+	public ResponsePositionsPlayersPartyJson changePlayerPosition(ServerWebSocket webSocket, Vector2 position) {
+		if(!players.containsKey(webSocket)) {
+			return null;
 		}
+
+		PlayerColor playerColor = players.get(webSocket).key;
+		positions.get(playerColor).set(position);
+
+		ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = new ResponsePositionsPlayersPartyJson();
+		responsePositionsPlayersPartyJson.positions = positions;
+		return responsePositionsPlayersPartyJson;
+	}
+
+	public boolean playerStatus(ServerWebSocket webSocket, boolean ready) {
+		if(players.containsKey(webSocket)) {
+			players.get(webSocket).value = ready;
+		}
+
+		boolean allReady = true;
+		for(Pair<PlayerColor, Boolean> pair : players.values()) {
+			allReady = allReady && pair.value;
+		}
+		return allReady;
 	}
 
 	public void removePlayer(ServerWebSocket webSocket) {
-		PlayerColor playerColor = null;
-		for(Map.Entry<PlayerColor, Pair<ServerWebSocket, Boolean>> player : players.entrySet()) {
-			if(player.getValue().key == webSocket) {
-				playerColor = player.getKey();
-			}
-		}
-		if(playerColor != null) {
-			positions.remove(playerColor);
-			players.remove(playerColor);
+		Pair<PlayerColor, Boolean> value = players.remove(webSocket);
+		if(value != null) {
+			positions.remove(value.key);
 		}
 	}
 
@@ -90,7 +96,7 @@ public class Party {
 		return state;
 	}
 
-	public Map<PlayerColor, Pair<ServerWebSocket, Boolean>> getPlayers() {
+	public Map<ServerWebSocket, Pair<PlayerColor, Boolean>> getPlayers() {
 		return players;
 	}
 }
