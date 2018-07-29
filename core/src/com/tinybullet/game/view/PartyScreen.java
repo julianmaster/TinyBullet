@@ -145,4 +145,8 @@ public class PartyScreen extends ScreenAdapter {
 	public void setPlayerColor(PlayerColor playerColor) {
 		this.playerColor = playerColor;
 	}
+
+	public PlayerColor getPlayerColor() {
+		return playerColor;
+	}
 }

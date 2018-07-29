@@ -23,13 +23,15 @@ public class Constants {
 
 	public static final short PLAYER_CATEGORY = 1;
 	public static final short PLAYER_WALLS_CATEGORY = 2;
-	public static final short BULLETS_CATEGORY = 4;
-	public static final short BULLETS_WALLS_CATEGORY = 8;
-	public static final short BULLETS_PLAYER_CATEGORY = 16;
-	public static final short BULLETS_DROPPED_CATEGORY = 32;
+	public static final short OTHERS_PLAYER_CATEGORY = 4;
+	public static final short BULLETS_CATEGORY = 8;
+	public static final short BULLETS_WALLS_CATEGORY = 16;
+	public static final short BULLETS_PLAYER_CATEGORY = 32;
+	public static final short BULLETS_DROPPED_CATEGORY = 64;
 
-	public static final short PLAYER_MASK = PLAYER_CATEGORY | PLAYER_WALLS_CATEGORY;
+	public static final short PLAYER_MASK = PLAYER_CATEGORY | PLAYER_WALLS_CATEGORY | OTHERS_PLAYER_CATEGORY;
 	public static final short WALLS_MASK = PLAYER_CATEGORY;
+	public static final short OTHERS_PLAYER_MASK = PLAYER_CATEGORY;
 
 	public static final short BULLETS_MASK = BULLETS_WALLS_CATEGORY;
 	public static final short BULLETS_DROPPED_MASK = BULLETS_WALLS_CATEGORY | BULLETS_PLAYER_CATEGORY;

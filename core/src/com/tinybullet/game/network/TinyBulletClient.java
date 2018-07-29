@@ -10,9 +10,10 @@ import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.net.ExtendedNet;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
+import com.tinybullet.game.network.json.server.ResponseListPartiesJson;
 import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
 import com.tinybullet.game.network.json.server.ResponsePlayerStatusPartyJson;
-import com.tinybullet.game.network.json.server.ResponseListPartiesJson;
+import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.view.GameScreen;
 import com.tinybullet.game.view.MenuScreen;
 import com.tinybullet.game.view.PartyScreen;
@@ -73,6 +74,23 @@ public class TinyBulletClient implements Disposable {
 					gameScreen.getLock().lock();
 					gameScreen.setState(((ResponsePartyStateJson)packet).partyState);
 					gameScreen.getLock().unlock();
+				}
+				else if(packet instanceof ResponsePositionsPlayersPartyJson) {
+					ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = (ResponsePositionsPlayersPartyJson)packet;
+					gameScreen.getLock().lock();
+					if(game.getScreen() != gameScreen) {
+						for(int i = 0; i < responsePositionsPlayersPartyJson.playerColors.length; i++) {
+							if(responsePositionsPlayersPartyJson.playerColors[i] == partyScreen.getPlayerColor()) {
+								gameScreen.init(partyScreen.getPlayerColor(), responsePositionsPlayersPartyJson.positions[i]);
+								break;
+							}
+						}
+					}
+					gameScreen.getLock().unlock();
+					gameScreen.update(responsePositionsPlayersPartyJson.playerColors, responsePositionsPlayersPartyJson.positions);
+					if(game.getScreen() != gameScreen) {
+						game.setScreen(gameScreen);
+					}
 				}
 				return FULLY_HANDLED;
 			}

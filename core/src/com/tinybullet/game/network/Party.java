@@ -2,18 +2,19 @@ package com.tinybullet.game.network;
 
 import com.badlogic.gdx.math.Vector2;
 import com.tinybullet.game.model.PlayerColor;
-import com.tinybullet.game.network.json.client.RequestPlayerStatusPartyJson;
 import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
 import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.util.Pair;
 import io.vertx.core.http.ServerWebSocket;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Party {
 	private PartyState state = PartyState.LOBBY;
 	private Map<ServerWebSocket, Pair<PlayerColor, Boolean>> players = new HashMap<>();
-	private Map<PlayerColor, Vector2> positions = new HashMap<>();
+	private HashMap<PlayerColor, Vector2> positions = new LinkedHashMap<>();
 //	private Map<BulletColor, PlayerColor> bulletTaked = new HashMap<>();
 
 	public boolean addPlayer(ServerWebSocket webSocket) {
@@ -45,7 +46,8 @@ public class Party {
 	public ResponsePositionsPlayersPartyJson waitStartParty() {
 		state = PartyState.WAIT_START;
 		ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = new ResponsePositionsPlayersPartyJson();
-		responsePositionsPlayersPartyJson.positions = positions;
+		responsePositionsPlayersPartyJson.playerColors = positions.keySet().toArray(new PlayerColor[positions.size()]);
+		responsePositionsPlayersPartyJson.positions = positions.values().toArray(new Vector2[positions.size()]);
 		return responsePositionsPlayersPartyJson;
 	}
 
@@ -65,7 +67,8 @@ public class Party {
 		positions.get(playerColor).set(position);
 
 		ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = new ResponsePositionsPlayersPartyJson();
-		responsePositionsPlayersPartyJson.positions = positions;
+		responsePositionsPlayersPartyJson.playerColors = positions.keySet().toArray(new PlayerColor[positions.size()]);
+		responsePositionsPlayersPartyJson.positions = positions.values().toArray(new Vector2[positions.size()]);
 		return responsePositionsPlayersPartyJson;
 	}
 

@@ -1,9 +1,12 @@
 package com.tinybullet.game;
 
+import com.badlogic.gdx.math.Vector2;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
+import com.tinybullet.game.model.Player;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.Party;
+import com.tinybullet.game.network.json.client.RequestChangePositionPlayerJson;
 import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
 import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
 import com.tinybullet.game.network.json.client.RequestPlayerStatusPartyJson;
@@ -19,10 +22,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.WebSocketFrame;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TinyBulletServer {
@@ -98,6 +98,8 @@ public class TinyBulletServer {
 					}
 
 					if(runParty) {
+						// TODO Verify if there is more than 1 player
+
 						// All players are readies
 						ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = party.waitStartParty();
 						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
@@ -122,7 +124,20 @@ public class TinyBulletServer {
 						sendResponsePlayerStatusPartyJson(party);
 					}
 
-					return;
+					break;
+				}
+			}
+			lock.unlock();
+		}
+		else if(request instanceof RequestChangePositionPlayerJson) {
+			lock.lock();
+			for(Party party : parties.values()) {
+				if(party.getPlayers().containsKey(webSocket)) {
+					ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = party.changePlayerPosition(webSocket, ((RequestChangePositionPlayerJson)request).position);
+					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePositionsPlayersPartyJson)));
+					}
+					break;
 				}
 			}
 			lock.unlock();
@@ -159,11 +174,16 @@ public class TinyBulletServer {
 			ResponsePlayerStatusPartyJson responsePlayerStatusPartyJson = new ResponsePlayerStatusPartyJson();
 			responsePlayerStatusPartyJson.join = true;
 			responsePlayerStatusPartyJson.playerColor = player.getValue().key;
-			responsePlayerStatusPartyJson.players = party.getPlayers().keySet().toArray(new PlayerColor[party.getPlayers().size()]);
-			boolean[] readies = new boolean[responsePlayerStatusPartyJson.players.length];
-			for(int i = 0 ; i< readies.length; i++) {
-				readies[i] = party.getPlayers().get(responsePlayerStatusPartyJson.players[i]).value;
+
+			PlayerColor[] playerColors = new PlayerColor[party.getPlayers().keySet().size()];
+			boolean[] readies = new boolean[party.getPlayers().keySet().size()];
+			int i = 0;
+			for(Pair<PlayerColor, Boolean> playerInfo : party.getPlayers().values()) {
+				playerColors[i] = playerInfo.key;
+				readies[i] = playerInfo.value;
+				i++;
 			}
+			responsePlayerStatusPartyJson.players = playerColors;
 			responsePlayerStatusPartyJson.readies = readies;
 			player.getKey().writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePlayerStatusPartyJson)));
 		}

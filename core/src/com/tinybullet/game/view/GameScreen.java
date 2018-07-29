@@ -26,8 +26,6 @@ public class GameScreen extends ScreenAdapter {
 
 	private Arena arena;
 	private List<Entity> entities = new ArrayList<>();
-	private List<Entity> newEntities = new ArrayList<>();
-	private List<Entity> entitiesForRemoval = new ArrayList<>();
 
 	private Player player;
 	private Map<PlayerColor, OtherPlayer> otherPlayers = new HashMap<>();
@@ -79,6 +77,23 @@ public class GameScreen extends ScreenAdapter {
 		lock.unlock();
 	}
 
+	public void update(PlayerColor[] playerColors, Vector2[] positions) {
+		lock.lock();
+		for(int i = 0; i < playerColors.length; i++) {
+			if(playerColors[i] != player.getColor()) {
+				if(otherPlayers.containsKey(playerColors[i])) {
+					otherPlayers.get(playerColors[i]).setPosition(positions[i]);
+				}
+				else {
+					OtherPlayer otherPlayer = new OtherPlayer(playerColors[i], positions[i], world);
+					otherPlayers.put(playerColors[i], otherPlayer);
+					entities.add(otherPlayer);
+				}
+			}
+		}
+		lock.unlock();
+	}
+
 	@Override
 	public void render(float delta) {
 		Batch batch = game.getBatch();
@@ -91,13 +106,9 @@ public class GameScreen extends ScreenAdapter {
 		lock.lock();
 		PartyState currentState = state;
 		if(currentState == PartyState.PLAY) {
-			entities.removeAll(entitiesForRemoval);
-			entitiesForRemoval.clear();
 			for(Entity entity : entities) {
 				entity.update(delta);
 			}
-			entities.addAll(newEntities);
-			newEntities.clear();
 		}
 
 		Collections.sort(entities);
@@ -158,14 +169,6 @@ public class GameScreen extends ScreenAdapter {
 
 	public void setState(PartyState state) {
 		this.state = state;
-	}
-
-	public List<Entity> getNewEntities() {
-		return newEntities;
-	}
-
-	public List<Entity> getEntitiesForRemoval() {
-		return entitiesForRemoval;
 	}
 
 	public List<Body> getBodiesScheduledForRemoval() {

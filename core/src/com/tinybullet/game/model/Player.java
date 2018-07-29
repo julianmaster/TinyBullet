@@ -12,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.network.PlayerPosition;
+import com.tinybullet.game.network.json.client.RequestChangePositionPlayerJson;
 import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
@@ -23,10 +24,8 @@ public class Player extends Entity {
 	private final World world;
 
 	private PlayerColor color;
-	private final Vector2 position;
 	private final Vector2 size;
-
-
+	private Vector2 oldPosition;
 	private Body body;
 	private Body bulletCollisionBody;
 
@@ -36,15 +35,14 @@ public class Player extends Entity {
 		this.screen = screen;
 		this.world = world;
 		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
+		this.oldPosition = new Vector2(48, 52);
 		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, this, world);
-		body.setLinearVelocity((float)0f, (float)0f);
+		body.setLinearVelocity(0f, 0f);
 		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, this, world);
-		this.position = new Vector2(48, 52);
 	}
 
 	@Override
 	public void update(float delta) {
-
 		if(Gdx.input.justTouched() && bullet != null) {
 			Vector3 screenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0f);
 			Vector3 worldCoords = screen.getGame().getCamera().unproject(screenCoords);
@@ -55,7 +53,6 @@ public class Player extends Entity {
 			bullet.fire(body.getPosition().x, body.getPosition().y - 3f, angle, direction);
 			bullet = null;
 		}
-
 
 
 		float y = 0f, x = 0f;
@@ -76,19 +73,21 @@ public class Player extends Entity {
 			x *= 0.7f;
 			y *= 0.7f;
 		}
-		body.setLinearVelocity((float)x * Constants.PLAYER_SPEED, (float)y * Constants.PLAYER_SPEED);
+		body.setLinearVelocity(x * Constants.PLAYER_SPEED, y * Constants.PLAYER_SPEED);
 		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
-		if(y != 0.0f || x != 0.0f) {
-			position.x = body.getPosition().x;
-			position.y = body.getPosition().y;
-//			screen.getClient().send(playerPosition);
+
+		if(!body.getPosition().epsilonEquals(oldPosition)) {
+			oldPosition.set(body.getPosition());
+			RequestChangePositionPlayerJson requestChangePositionPlayerJson = new RequestChangePositionPlayerJson();
+			requestChangePositionPlayerJson.position = body.getPosition();
+			screen.getGame().getClient().send(requestChangePositionPlayerJson);
 		}
 	}
 
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
 		// TODO change player for match color set
-		batch.draw(assetManager.get(Asset.PLAYER1.filename, Texture.class), body.getPosition().x - Constants.PLAYER_COLLISION_WIDTH_OFFSET - Constants.PLAYER_COLLISION_WIDTH / 2f,
+		batch.draw(assetManager.get(color.player.filename, Texture.class), body.getPosition().x - Constants.PLAYER_COLLISION_WIDTH_OFFSET - Constants.PLAYER_COLLISION_WIDTH / 2f,
 				body.getPosition().y - Constants.PLAYER_COLLISION_HEIGHT_OFFSET - Constants.PLAYER_COLLISION_HEIGHT /2f);
 	}
 
@@ -119,6 +118,10 @@ public class Player extends Entity {
 
 	public void setColor(PlayerColor color) {
 		this.color = color;
+	}
+
+	public PlayerColor getColor() {
+		return color;
 	}
 
 	@Override
