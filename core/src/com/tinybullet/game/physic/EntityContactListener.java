@@ -46,8 +46,10 @@ public class EntityContactListener implements ContactListener {
 				if(bullet.isDropped()) {
 					bullet.setDropped(false);
 					player.setBullet(bullet);
-//					screen.getEntitiesForRemoval().add(bullet);
-					screen.getBodiesScheduledForRemoval().add(bullet.getBody());
+					screen.getLock().lock();
+					screen.getEntities().remove(bullet);
+					screen.getWorld().destroyBody(bullet.getBody());
+					screen.getLock().unlock();
 					bullet.setBody(null);
 				}
 			}
@@ -75,8 +77,10 @@ public class EntityContactListener implements ContactListener {
 				if(bullet.isDropped()) {
 					bullet.setDropped(false);
 					player.setBullet(bullet);
-//					screen.getEntitiesForRemoval().add(bullet);
-					screen.getBodiesScheduledForRemoval().add(bullet.getBody());
+					screen.getLock().lock();
+					screen.getEntities().remove(bullet);
+					screen.getWorld().destroyBody(bullet.getBody());
+					screen.getLock().unlock();
 					bullet.setBody(null);
 				}
 			}

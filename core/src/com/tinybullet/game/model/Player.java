@@ -86,7 +86,6 @@ public class Player extends Entity {
 
 	@Override
 	public void render(Batch batch, AssetManager assetManager) {
-		// TODO change player for match color set
 		batch.draw(assetManager.get(color.player.filename, Texture.class), body.getPosition().x - Constants.PLAYER_COLLISION_WIDTH_OFFSET - Constants.PLAYER_COLLISION_WIDTH / 2f,
 				body.getPosition().y - Constants.PLAYER_COLLISION_HEIGHT_OFFSET - Constants.PLAYER_COLLISION_HEIGHT /2f);
 	}

@@ -142,16 +142,6 @@ public class TinyBulletServer {
 			}
 			lock.unlock();
 		}
-//		else if(request instanceof ) {
-//			 playerInfoJson = ()request;
-//			Party party = parties.get(playerInfoJson.party);
-//			if(party == null) {
-//				return;
-//			}
-//			party.changePlayerPosition(playerInfoJson);
-//			// TODO send to others members of party
-//			System.out.println(playerInfoJson.playerColor.name()+": ["+ playerInfoJson.x+"; "+ playerInfoJson.y+"]");
-//		}
 
 
 

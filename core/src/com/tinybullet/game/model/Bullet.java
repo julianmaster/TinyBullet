@@ -15,14 +15,16 @@ import com.tinybullet.game.view.Asset;
 public class Bullet extends Entity {
 
 	private final World world;
-	private final Vector2 size;
 
+	private BulletColor color;
 	private Vector2 direction = null;
+	private final Vector2 size;
 	private Body body = null;
 	private boolean move = false;
 	private boolean dropped = false;
 
-	public Bullet(World world) {
+	public Bullet(BulletColor color, World world) {
+		this.color = color;
 		this.world = world;
 		this.size = new Vector2(2f, 1f);
 	}
@@ -34,9 +36,11 @@ public class Bullet extends Entity {
 		}
 		body.setTransform(x, y, angle);
 		this.direction = direction;
-		direction.scl(Constants.BULLET_SPEED);
+		this.direction.scl(Constants.BULLET_SPEED);
 		move = true;
 		dropped = false;
+
+		// TODO send the RequestFireBulletJson to server
 	}
 
 	@Override
@@ -54,13 +58,13 @@ public class Bullet extends Entity {
 	public void render(Batch batch, AssetManager assetManager) {
 		if(!move && dropped) {
 			Color saveColor = batch.getColor();
-			batch.setColor(Constants.BULLET_PLAYER1_HALO);
+			batch.setColor(color.halo);
 			batch.draw(assetManager.get(Asset.GRADIENT.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f - 3f, 2f/2f, 1f/2f,
 					2f, 16f, 1f, 1f, 0f, 0, 0, 2, 16, false, false);
 			batch.setColor(saveColor);
 		}
 		if(move || dropped) {
-			batch.draw(assetManager.get(Asset.PLAYER1_BULLET.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f, 2f/2f, 1f/2f,
+			batch.draw(assetManager.get(color.bullet.filename, Texture.class), body.getPosition().x - 2f/2f, body.getPosition().y - 1f/2f, 2f/2f, 1f/2f,
 					2f, 1f, 1f, 1f, body.getAngle() * MathUtils.radiansToDegrees, 0, 0, 2, 1, false, false);
 		}
 	}

@@ -60,4 +60,8 @@ public class OtherPlayer extends Entity {
 	public Vector2 getSize() {
 		return size;
 	}
+
+	public Body getBody() {
+		return body;
+	}
 }

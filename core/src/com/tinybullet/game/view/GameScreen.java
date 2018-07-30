@@ -29,13 +29,12 @@ public class GameScreen extends ScreenAdapter {
 
 	private Player player;
 	private Map<PlayerColor, OtherPlayer> otherPlayers = new HashMap<>();
-	private Bullet redBullet;
-	private Bullet greenBullet;
+
+	private Map<BulletColor, Bullet> bullets = new HashMap<>();
 
 	// Box2D
 	private World world;
-	private List<Body> bodiesScheduledForRemoval = new ArrayList<>();
-	private boolean showDebugPhysics = true;
+	private boolean showDebugPhysics = false;
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
 	// Game state
@@ -54,6 +53,16 @@ public class GameScreen extends ScreenAdapter {
 		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 45,21, 8, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 17,21, 12, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 47,43, 12, 6));
+
+		bullets.put(BulletColor.RED, new Bullet(BulletColor.RED, world));
+		bullets.put(BulletColor.GREEN, new Bullet(BulletColor.GREEN, world));
+		bullets.put(BulletColor.YELLOW, new Bullet(BulletColor.YELLOW, world));
+		bullets.put(BulletColor.PURPLE, new Bullet(BulletColor.PURPLE, world));
+
+		for(Bullet bullet : bullets.values()) {
+			entities.add(bullet);
+		}
+
 		lock.unlock();
 	}
 
@@ -61,20 +70,16 @@ public class GameScreen extends ScreenAdapter {
 		player.setColor(color);
 		player.setPosition(position);
 
-		// TODO remove old OtherPlayer from stage list
+		player.setBullet(bullets.get(color.initBullet));
+
+		for(OtherPlayer otherPlayer : otherPlayers.values()) {
+			world.destroyBody(otherPlayer.getBody());
+		}
+		otherPlayers.clear();
 	}
 
 	@Override
 	public void show() {
-		lock.lock();
-		redBullet = new Bullet(world);
-		greenBullet = new Bullet(world);
-
-		player.setBullet(redBullet);
-
-		entities.add(redBullet);
-		entities.add(greenBullet);
-		lock.unlock();
 	}
 
 	public void update(PlayerColor[] playerColors, Vector2[] positions) {
@@ -136,10 +141,6 @@ public class GameScreen extends ScreenAdapter {
 			debugRenderer.render(world, game.getCamera().combined);
 		}
 
-		for(Body body : bodiesScheduledForRemoval) {
-			world.destroyBody(body);
-		}
-		bodiesScheduledForRemoval.clear();
 		world.step(1/60f, 6, 2);
 		lock.unlock();
 	}
@@ -155,23 +156,19 @@ public class GameScreen extends ScreenAdapter {
 		return game;
 	}
 
+	public World getWorld() {
+		return world;
+	}
+
 	public ReentrantLock getLock() {
 		return lock;
-	}
-
-	public Player getPlayer() {
-		return player;
-	}
-
-	public PartyState getState() {
-		return state;
 	}
 
 	public void setState(PartyState state) {
 		this.state = state;
 	}
 
-	public List<Body> getBodiesScheduledForRemoval() {
-		return bodiesScheduledForRemoval;
+	public List<Entity> getEntities() {
+		return entities;
 	}
 }
