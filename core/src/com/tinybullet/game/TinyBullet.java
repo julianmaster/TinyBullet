@@ -70,8 +70,13 @@ public class TinyBullet extends Game {
 		assetManager.load(Asset.PILLAR2_SHADOW.filename, Texture.class);
 		assetManager.load(Asset.PLAYER1.filename, Texture.class);
 		assetManager.load(Asset.PLAYER2.filename, Texture.class);
+		assetManager.load(Asset.PLAYER3.filename, Texture.class);
+		assetManager.load(Asset.PLAYER4.filename, Texture.class);
 		assetManager.load(Asset.PLAYER_SHADOW.filename, Texture.class);
 		assetManager.load(Asset.PLAYER1_BULLET.filename, Texture.class);
+		assetManager.load(Asset.PLAYER2_BULLET.filename, Texture.class);
+		assetManager.load(Asset.PLAYER3_BULLET.filename, Texture.class);
+		assetManager.load(Asset.PLAYER4_BULLET.filename, Texture.class);
 		assetManager.load(Asset.PLAYER_BULLET_SHADOW.filename, Texture.class);
 		assetManager.load(Asset.GRADIENT.filename, Texture.class);
 

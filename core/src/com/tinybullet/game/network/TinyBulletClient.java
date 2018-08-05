@@ -10,10 +10,8 @@ import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.net.ExtendedNet;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
-import com.tinybullet.game.network.json.server.ResponseListPartiesJson;
-import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
-import com.tinybullet.game.network.json.server.ResponsePlayerStatusPartyJson;
-import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
+import com.tinybullet.game.network.json.client.RequestFireBulletJson;
+import com.tinybullet.game.network.json.server.*;
 import com.tinybullet.game.view.GameScreen;
 import com.tinybullet.game.view.MenuScreen;
 import com.tinybullet.game.view.PartyScreen;
@@ -90,6 +88,12 @@ public class TinyBulletClient implements Disposable {
 					gameScreen.update(responsePositionsPlayersPartyJson.playerColors, responsePositionsPlayersPartyJson.positions);
 					if(game.getScreen() != gameScreen) {
 						game.setScreen(gameScreen);
+					}
+				}
+				else if(packet instanceof ResponseFireBulletJson) {
+					ResponseFireBulletJson responseFireBulletJson = (ResponseFireBulletJson)packet;
+					if(!gameScreen.getBullets().get(responseFireBulletJson.color).isMove()) {
+						gameScreen.getBullets().get(responseFireBulletJson.color).fire(responseFireBulletJson.position, responseFireBulletJson.angle, responseFireBulletJson.direction);
 					}
 				}
 				return FULLY_HANDLED;

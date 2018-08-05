@@ -50,7 +50,7 @@ public class Player extends Entity {
 			float angle = MathUtils.atan2(worldCoords.y - body.getPosition().y + 3f, worldCoords.x - body.getPosition().x);
 			Vector2 direction = new Vector2(MathUtils.cos(angle), MathUtils.sin(angle));
 
-			bullet.fire(body.getPosition().x, body.getPosition().y - 3f, angle, direction);
+			bullet.fire(new Vector2(body.getPosition().x, body.getPosition().y - 3f), angle, direction);
 			bullet = null;
 		}
 

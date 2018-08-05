@@ -9,11 +9,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
+import com.tinybullet.game.TinyBullet;
+import com.tinybullet.game.network.json.client.RequestFireBulletJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
 
 public class Bullet extends Entity {
 
+	private final TinyBullet game;
 	private final World world;
 
 	private BulletColor color;
@@ -23,24 +26,31 @@ public class Bullet extends Entity {
 	private boolean move = false;
 	private boolean dropped = false;
 
-	public Bullet(BulletColor color, World world) {
-		this.color = color;
+	public Bullet(BulletColor color, World world, TinyBullet game) {
+		this.game = game;
 		this.world = world;
+		this.color = color;
 		this.size = new Vector2(2f, 1f);
 	}
 
-	public void fire(float x, float y, float angle, Vector2 direction) {
+	public void fire(Vector2 position, float angle, Vector2 direction) {
 		if(body == null) {
-			this.body = PhysicManager.createBox(x, y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, this, world);
+			this.body = PhysicManager.createBox(position.x, position.y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, this, world);
 			this.body.setBullet(true);
 		}
-		body.setTransform(x, y, angle);
+		body.setTransform(position.x, position.y, angle);
 		this.direction = direction;
 		this.direction.scl(Constants.BULLET_SPEED);
 		move = true;
 		dropped = false;
 
 		// TODO send the RequestFireBulletJson to server
+		RequestFireBulletJson requestFireBulletJson = new RequestFireBulletJson();
+		requestFireBulletJson.position = body.getPosition();
+		requestFireBulletJson.color = color;
+		requestFireBulletJson.angle = angle;
+		requestFireBulletJson.direction = direction;
+		game.getClient().send(requestFireBulletJson);
 	}
 
 	@Override
@@ -97,6 +107,10 @@ public class Bullet extends Entity {
 	@Override
 	public Vector2 getSize() {
 		return size;
+	}
+
+	public BulletColor getColor() {
+		return color;
 	}
 
 	public void setMove(boolean move) {

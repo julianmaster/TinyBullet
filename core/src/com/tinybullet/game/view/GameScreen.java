@@ -54,10 +54,10 @@ public class GameScreen extends ScreenAdapter {
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 17,21, 12, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 47,43, 12, 6));
 
-		bullets.put(BulletColor.RED, new Bullet(BulletColor.RED, world));
-		bullets.put(BulletColor.GREEN, new Bullet(BulletColor.GREEN, world));
-		bullets.put(BulletColor.YELLOW, new Bullet(BulletColor.YELLOW, world));
-		bullets.put(BulletColor.PURPLE, new Bullet(BulletColor.PURPLE, world));
+		bullets.put(BulletColor.RED, new Bullet(BulletColor.RED, world, game));
+		bullets.put(BulletColor.GREEN, new Bullet(BulletColor.GREEN, world, game));
+		bullets.put(BulletColor.YELLOW, new Bullet(BulletColor.YELLOW, world, game));
+		bullets.put(BulletColor.PURPLE, new Bullet(BulletColor.PURPLE, world, game));
 
 		for(Bullet bullet : bullets.values()) {
 			entities.add(bullet);
@@ -170,5 +170,9 @@ public class GameScreen extends ScreenAdapter {
 
 	public List<Entity> getEntities() {
 		return entities;
+	}
+
+	public Map<BulletColor, Bullet> getBullets() {
+		return bullets;
 	}
 }

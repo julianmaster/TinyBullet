@@ -6,14 +6,8 @@ import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
 import com.tinybullet.game.model.Player;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.Party;
-import com.tinybullet.game.network.json.client.RequestChangePositionPlayerJson;
-import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
-import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
-import com.tinybullet.game.network.json.client.RequestPlayerStatusPartyJson;
-import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
-import com.tinybullet.game.network.json.server.ResponsePlayerStatusPartyJson;
-import com.tinybullet.game.network.json.server.ResponseListPartiesJson;
-import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
+import com.tinybullet.game.network.json.client.*;
+import com.tinybullet.game.network.json.server.*;
 import com.tinybullet.game.util.Pair;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -142,7 +136,25 @@ public class TinyBulletServer {
 			}
 			lock.unlock();
 		}
+		else if(request instanceof RequestFireBulletJson) {
+			lock.lock();
+			RequestFireBulletJson requestFireBulletJson = (RequestFireBulletJson)request;
+			ResponseFireBulletJson responseFireBulletJson = new ResponseFireBulletJson();
+			responseFireBulletJson.position = requestFireBulletJson.position;
+			responseFireBulletJson.angle = requestFireBulletJson.angle;
+			responseFireBulletJson.color = requestFireBulletJson.color;
+			responseFireBulletJson.direction = requestFireBulletJson.direction;
 
+			for(Party party : parties.values()) {
+				if (party.getPlayers().containsKey(webSocket)) {
+					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseFireBulletJson)));
+					}
+					break;
+				}
+			}
+			lock.unlock();
+		}
 
 
 

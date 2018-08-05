@@ -1,6 +1,7 @@
 package com.tinybullet.game.network;
 
 import com.badlogic.gdx.math.Vector2;
+import com.tinybullet.game.model.BulletColor;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
 import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
@@ -15,7 +16,7 @@ public class Party {
 	private PartyState state = PartyState.LOBBY;
 	private Map<ServerWebSocket, Pair<PlayerColor, Boolean>> players = new HashMap<>();
 	private HashMap<PlayerColor, Vector2> positions = new LinkedHashMap<>();
-//	private Map<BulletColor, PlayerColor> bulletTaked = new HashMap<>();
+	private HashMap<PlayerColor, BulletColor> bulletsTaked = new LinkedHashMap<>();
 
 	public boolean addPlayer(ServerWebSocket webSocket) {
 		if(!positions.containsKey(PlayerColor.RED)) {

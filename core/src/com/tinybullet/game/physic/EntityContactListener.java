@@ -6,6 +6,7 @@ import com.tinybullet.game.model.Arena;
 import com.tinybullet.game.model.Bullet;
 import com.tinybullet.game.model.Pillar;
 import com.tinybullet.game.model.Player;
+import com.tinybullet.game.network.json.client.RequestPickUpBulletJson;
 import com.tinybullet.game.view.GameScreen;
 
 public class EntityContactListener implements ContactListener {
@@ -49,6 +50,9 @@ public class EntityContactListener implements ContactListener {
 					screen.getLock().lock();
 					screen.getEntities().remove(bullet);
 					screen.getWorld().destroyBody(bullet.getBody());
+					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
+					requestPickUpBulletJson.color = bullet.getColor();
+					screen.getGame().getClient().send(requestPickUpBulletJson);
 					screen.getLock().unlock();
 					bullet.setBody(null);
 				}
