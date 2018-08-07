@@ -23,6 +23,7 @@ public class Bullet extends Entity {
 	private Vector2 direction = null;
 	private final Vector2 size;
 	private Body body = null;
+	private boolean lock = false;
 	private boolean move = false;
 	private boolean dropped = false;
 
@@ -43,14 +44,21 @@ public class Bullet extends Entity {
 		this.direction.scl(Constants.BULLET_SPEED);
 		move = true;
 		dropped = false;
+		game.getGameScreen().getEntitiesToAdd().add(this);
 
-		// TODO send the RequestFireBulletJson to server
 		RequestFireBulletJson requestFireBulletJson = new RequestFireBulletJson();
 		requestFireBulletJson.position = body.getPosition();
 		requestFireBulletJson.color = color;
 		requestFireBulletJson.angle = angle;
 		requestFireBulletJson.direction = direction;
 		game.getClient().send(requestFireBulletJson);
+	}
+
+	public void pickUp() {
+		dropped = false;
+		lock = true;
+		game.getGameScreen().getBodiesToRemove().add(body);
+		body = null;
 	}
 
 	@Override
@@ -111,6 +119,14 @@ public class Bullet extends Entity {
 
 	public BulletColor getColor() {
 		return color;
+	}
+
+	public boolean isLock() {
+		return lock;
+	}
+
+	public void setLock(boolean lock) {
+		this.lock = lock;
 	}
 
 	public void setMove(boolean move) {

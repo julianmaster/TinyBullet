@@ -1,4 +1,4 @@
-package com.tinybullet.game.network;
+package com.tinybullet.game.model;
 
 public enum PartyState {
 	LOBBY,

@@ -11,9 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
-import com.tinybullet.game.network.PlayerPosition;
 import com.tinybullet.game.network.json.client.RequestChangePositionPlayerJson;
-import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
 import com.tinybullet.game.view.GameScreen;
@@ -43,7 +41,7 @@ public class Player extends Entity {
 
 	@Override
 	public void update(float delta) {
-		if(Gdx.input.justTouched() && bullet != null) {
+		if(Gdx.input.justTouched() && bullet != null && !bullet.isLock()) {
 			Vector3 screenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0f);
 			Vector3 worldCoords = screen.getGame().getCamera().unproject(screenCoords);
 
@@ -128,15 +126,7 @@ public class Player extends Entity {
 		return size;
 	}
 
-	public Body getBody() {
-		return body;
-	}
-
 	public void setBullet(Bullet bullet) {
 		this.bullet = bullet;
-	}
-
-	public Bullet getBullet() {
-		return bullet;
 	}
 }

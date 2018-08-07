@@ -36,7 +36,6 @@ public class EntityContactListener implements ContactListener {
 						filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
 						filter.maskBits = Constants.BULLETS_DROPPED_MASK;
 						fixture.setFilterData(filter);
-						System.out.println(fixture.getFilterData().categoryBits);
 					}
 				}
 			}
@@ -45,16 +44,15 @@ public class EntityContactListener implements ContactListener {
 				Bullet bullet = (Bullet) objectA;
 				Player player = (Player) objectB;
 				if(bullet.isDropped()) {
-					bullet.setDropped(false);
-					player.setBullet(bullet);
 					screen.getLock().lock();
+					bullet.pickUp();
+					player.setBullet(bullet);
 					screen.getEntities().remove(bullet);
-					screen.getWorld().destroyBody(bullet.getBody());
+					screen.getLock().unlock();
+
 					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
 					requestPickUpBulletJson.color = bullet.getColor();
 					screen.getGame().getClient().send(requestPickUpBulletJson);
-					screen.getLock().unlock();
-					bullet.setBody(null);
 				}
 			}
 		}
@@ -70,7 +68,6 @@ public class EntityContactListener implements ContactListener {
 						filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
 						filter.maskBits = Constants.BULLETS_DROPPED_MASK;
 						fixture.setFilterData(filter);
-						System.out.println(fixture.getFilterData().categoryBits);
 					}
 				}
 			}
@@ -79,13 +76,15 @@ public class EntityContactListener implements ContactListener {
 				Bullet bullet = (Bullet) objectB;
 				Player player = (Player) objectA;
 				if(bullet.isDropped()) {
-					bullet.setDropped(false);
-					player.setBullet(bullet);
 					screen.getLock().lock();
+					bullet.pickUp();
+					player.setBullet(bullet);
 					screen.getEntities().remove(bullet);
-					screen.getWorld().destroyBody(bullet.getBody());
 					screen.getLock().unlock();
-					bullet.setBody(null);
+
+					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
+					requestPickUpBulletJson.color = bullet.getColor();
+					screen.getGame().getClient().send(requestPickUpBulletJson);
 				}
 			}
 		}

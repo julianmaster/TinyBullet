@@ -1,11 +1,9 @@
 package com.tinybullet.game;
 
-import com.badlogic.gdx.math.Vector2;
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
-import com.tinybullet.game.model.Player;
 import com.tinybullet.game.model.PlayerColor;
-import com.tinybullet.game.network.Party;
+import com.tinybullet.game.model.Party;
 import com.tinybullet.game.network.json.client.*;
 import com.tinybullet.game.network.json.server.*;
 import com.tinybullet.game.util.Pair;
@@ -16,7 +14,10 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.WebSocketFrame;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TinyBulletServer {
@@ -39,7 +40,7 @@ public class TinyBulletServer {
 		parties.put(2, new Party());
 		parties.put(3, new Party());
 		parties.put(5, new Party());
-		System.out.println("Go");
+		System.out.println("Go!");
 	}
 
 	private void handleFrame(final ServerWebSocket webSocket, final WebSocketFrame frame) {
@@ -137,7 +138,6 @@ public class TinyBulletServer {
 			lock.unlock();
 		}
 		else if(request instanceof RequestFireBulletJson) {
-			lock.lock();
 			RequestFireBulletJson requestFireBulletJson = (RequestFireBulletJson)request;
 			ResponseFireBulletJson responseFireBulletJson = new ResponseFireBulletJson();
 			responseFireBulletJson.position = requestFireBulletJson.position;
@@ -145,8 +145,9 @@ public class TinyBulletServer {
 			responseFireBulletJson.color = requestFireBulletJson.color;
 			responseFireBulletJson.direction = requestFireBulletJson.direction;
 
+			lock.lock();
 			for(Party party : parties.values()) {
-				if (party.getPlayers().containsKey(webSocket)) {
+				if (party.getPlayers().containsKey(webSocket) && party.fireBullet(webSocket, requestFireBulletJson.color)) {
 					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
 						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseFireBulletJson)));
 					}
@@ -155,18 +156,38 @@ public class TinyBulletServer {
 			}
 			lock.unlock();
 		}
+		else if(request instanceof RequestPickUpBulletJson) {
+			RequestPickUpBulletJson requestPickUpBulletJson = (RequestPickUpBulletJson)request;
+			ResponsePickUpBulletJson responsePickUpBulletJson = new ResponsePickUpBulletJson();
 
-
-
-
-
+			lock.lock();
+			for(Party party : parties.values()) {
+				if (party.getPlayers().containsKey(webSocket)) {
+					responsePickUpBulletJson.playerColor = party.getPlayers().get(webSocket).key;
+					responsePickUpBulletJson.bulletColor = requestPickUpBulletJson.color;
+					responsePickUpBulletJson.pickUp = party.pickUpBullet(webSocket, requestPickUpBulletJson.color);
+					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePickUpBulletJson)));
+					}
+					break;
+				}
+			}
+			lock.unlock();
+		}
 	}
 
 	private void handleSocketClosed(final ServerWebSocket webSocket, final Void frame) {
 		lock.lock();
 		webSockets.remove(webSocket);
-		for(Party party : parties.values()) {
-			party.removePlayer(webSocket);
+		List<Integer> nums = new ArrayList<>();
+		for(Map.Entry<Integer, Party> party : parties.entrySet()) {
+			party.getValue().removePlayer(webSocket);
+			if(party.getValue().getPlayers().isEmpty()) {
+				nums.add(party.getKey());
+			}
+		}
+		for(Integer num : nums) {
+			parties.remove(num);
 		}
 		lock.unlock();
 	}

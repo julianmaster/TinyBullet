@@ -1,4 +1,4 @@
-package com.tinybullet.game.network;
+package com.tinybullet.game.model;
 
 import com.badlogic.gdx.math.Vector2;
 
@@ -7,6 +7,8 @@ public enum PlayerStartPosition {
 	GREEN(new Vector2(48f, 52f)),
 	YELLOW(new Vector2(0f, 0f)),
 	PURPLE(new Vector2(0f, 0f));
+
+	// TODO Finish to set player start position
 
 	public Vector2 position;
 

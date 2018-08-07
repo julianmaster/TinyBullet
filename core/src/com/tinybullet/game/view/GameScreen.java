@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
-import com.tinybullet.game.network.PartyState;
+import com.tinybullet.game.model.PartyState;
 import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.*;
@@ -25,15 +25,15 @@ public class GameScreen extends ScreenAdapter {
 	private ReentrantLock lock = new ReentrantLock();
 
 	private Arena arena;
-	private List<Entity> entities = new ArrayList<>();
-
 	private Player player;
+	private List<Entity> entities = new ArrayList<>();
+	private List<Entity> entitiesToAdd = new ArrayList<>();
 	private Map<PlayerColor, OtherPlayer> otherPlayers = new HashMap<>();
-
 	private Map<BulletColor, Bullet> bullets = new HashMap<>();
 
 	// Box2D
 	private World world;
+	private List<Body> bodiesToRemove = new ArrayList<>();
 	private boolean showDebugPhysics = false;
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
@@ -109,8 +109,12 @@ public class GameScreen extends ScreenAdapter {
 		}
 
 		lock.lock();
-		PartyState currentState = state;
-		if(currentState == PartyState.PLAY) {
+		for(Entity entity : entitiesToAdd) {
+			entities.add(entity);
+		}
+		entitiesToAdd.clear();
+
+		if(state == PartyState.PLAY) {
 			for(Entity entity : entities) {
 				entity.update(delta);
 			}
@@ -141,6 +145,11 @@ public class GameScreen extends ScreenAdapter {
 			debugRenderer.render(world, game.getCamera().combined);
 		}
 
+		for(Body body : bodiesToRemove){
+			world.destroyBody(body);
+		}
+		bodiesToRemove.clear();
+
 		world.step(1/60f, 6, 2);
 		lock.unlock();
 	}
@@ -156,8 +165,12 @@ public class GameScreen extends ScreenAdapter {
 		return game;
 	}
 
-	public World getWorld() {
-		return world;
+	public Player getPlayer() {
+		return player;
+	}
+
+	public List<Body> getBodiesToRemove() {
+		return bodiesToRemove;
 	}
 
 	public ReentrantLock getLock() {
@@ -166,6 +179,10 @@ public class GameScreen extends ScreenAdapter {
 
 	public void setState(PartyState state) {
 		this.state = state;
+	}
+
+	public List<Entity> getEntitiesToAdd() {
+		return entitiesToAdd;
 	}
 
 	public List<Entity> getEntities() {

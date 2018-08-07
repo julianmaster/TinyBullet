@@ -1,8 +1,6 @@
-package com.tinybullet.game.network;
+package com.tinybullet.game.model;
 
 import com.badlogic.gdx.math.Vector2;
-import com.tinybullet.game.model.BulletColor;
-import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
 import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
 import com.tinybullet.game.util.Pair;
@@ -19,6 +17,10 @@ public class Party {
 	private HashMap<PlayerColor, BulletColor> bulletsTaked = new LinkedHashMap<>();
 
 	public boolean addPlayer(ServerWebSocket webSocket) {
+		if(state != PartyState.LOBBY) {
+			return false;
+		}
+
 		if(!positions.containsKey(PlayerColor.RED)) {
 			initPlayerPosition(webSocket, PlayerColor.RED, PlayerStartPosition.RED);
 			return true;
@@ -46,6 +48,10 @@ public class Party {
 
 	public ResponsePositionsPlayersPartyJson waitStartParty() {
 		state = PartyState.WAIT_START;
+		bulletsTaked.put(PlayerColor.RED, BulletColor.RED);
+		bulletsTaked.put(PlayerColor.GREEN, BulletColor.GREEN);
+		bulletsTaked.put(PlayerColor.YELLOW, BulletColor.YELLOW);
+		bulletsTaked.put(PlayerColor.PURPLE, BulletColor.PURPLE);
 		ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = new ResponsePositionsPlayersPartyJson();
 		responsePositionsPlayersPartyJson.playerColors = positions.keySet().toArray(new PlayerColor[positions.size()]);
 		responsePositionsPlayersPartyJson.positions = positions.values().toArray(new Vector2[positions.size()]);
@@ -83,6 +89,22 @@ public class Party {
 			allReady = allReady && pair.value;
 		}
 		return allReady;
+	}
+
+	public boolean fireBullet(ServerWebSocket webSocket, BulletColor color) {
+		if(bulletsTaked.get(players.get(webSocket).key) != null && bulletsTaked.get(players.get(webSocket).key) == color) {
+			bulletsTaked.remove(players.get(webSocket).key);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean pickUpBullet(ServerWebSocket webSocket, BulletColor color) {
+		if(!bulletsTaked.values().contains(color)) {
+			bulletsTaked.put(players.get(webSocket).key, color);
+			return true;
+		}
+		return false;
 	}
 
 	public void removePlayer(ServerWebSocket webSocket) {
