@@ -19,7 +19,7 @@ public class OtherPlayer extends Entity {
 	public OtherPlayer(PlayerColor color, Vector2 position, World world) {
 		this.color = color;
 		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
-		this.body = PhysicManager.createBox(position.x, position.y, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.OTHERS_PLAYER_CATEGORY, Constants.OTHERS_PLAYER_MASK, true, this, world);
+		this.body = PhysicManager.createBox(position.x, position.y, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.OTHERS_PLAYER_CATEGORY, Constants.OTHERS_PLAYER_MASK, true, false, this, world);
 	}
 
 	@Override

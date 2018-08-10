@@ -34,9 +34,9 @@ public class Player extends Entity {
 		this.world = world;
 		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
 		this.oldPosition = new Vector2(48, 52);
-		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, this, world);
+		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, world);
 		body.setLinearVelocity(0f, 0f);
-		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, this, world);
+		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, false, this, world);
 	}
 
 	@Override
@@ -48,7 +48,8 @@ public class Player extends Entity {
 			float angle = MathUtils.atan2(worldCoords.y - body.getPosition().y + 3f, worldCoords.x - body.getPosition().x);
 			Vector2 direction = new Vector2(MathUtils.cos(angle), MathUtils.sin(angle));
 
-			bullet.fire(new Vector2(body.getPosition().x, body.getPosition().y - 3f), angle, direction);
+			bullet.setSourceOfFire(true);
+			bullet.fire(new Vector2(body.getPosition().x, body.getPosition().y - 3f), angle, direction, true);
 			bullet = null;
 		}
 

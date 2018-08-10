@@ -24,6 +24,10 @@ public class EntityContactListener implements ContactListener {
 		Object objectA = contact.getFixtureA().getBody().getUserData();
 		Object objectB = contact.getFixtureB().getBody().getUserData();
 
+		System.out.println(objectA.getClass().getCanonicalName());
+		System.out.println(objectB.getClass().getCanonicalName());
+
+		screen.getLock().lock();
 		if(objectA instanceof Bullet) {
 			// Bullet vs Pillar/Arena
 			if (objectB instanceof Pillar || objectB instanceof Arena) {
@@ -44,11 +48,8 @@ public class EntityContactListener implements ContactListener {
 				Bullet bullet = (Bullet) objectA;
 				Player player = (Player) objectB;
 				if(bullet.isDropped()) {
-					screen.getLock().lock();
 					bullet.pickUp();
 					player.setBullet(bullet);
-					screen.getEntities().remove(bullet);
-					screen.getLock().unlock();
 
 					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
 					requestPickUpBulletJson.color = bullet.getColor();
@@ -76,11 +77,8 @@ public class EntityContactListener implements ContactListener {
 				Bullet bullet = (Bullet) objectB;
 				Player player = (Player) objectA;
 				if(bullet.isDropped()) {
-					screen.getLock().lock();
 					bullet.pickUp();
 					player.setBullet(bullet);
-					screen.getEntities().remove(bullet);
-					screen.getLock().unlock();
 
 					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
 					requestPickUpBulletJson.color = bullet.getColor();
@@ -88,6 +86,7 @@ public class EntityContactListener implements ContactListener {
 				}
 			}
 		}
+		screen.getLock().unlock();
 	}
 
 	@Override

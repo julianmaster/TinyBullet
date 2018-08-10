@@ -102,7 +102,8 @@ public class TinyBulletServer {
 						}
 
 						// Send a ResponsePartyStateJson for start the game after 3 seconds
-						vertx.setTimer(3000L, new Handler<Long>() {
+//						vertx.setTimer(3000L, new Handler<Long>() {
+						vertx.setTimer(100L, new Handler<Long>() {
 							@Override
 							public void handle(Long event) {
 								lock.lock();

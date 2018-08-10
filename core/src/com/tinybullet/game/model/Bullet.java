@@ -26,6 +26,8 @@ public class Bullet extends Entity {
 	private boolean lock = false;
 	private boolean move = false;
 	private boolean dropped = false;
+	private boolean sourceOfFire = false;
+	private boolean playerFire = false;
 
 	public Bullet(BulletColor color, World world, TinyBullet game) {
 		this.game = game;
@@ -34,10 +36,10 @@ public class Bullet extends Entity {
 		this.size = new Vector2(2f, 1f);
 	}
 
-	public void fire(Vector2 position, float angle, Vector2 direction) {
+	public void fire(Vector2 position, float angle, Vector2 direction, boolean playerFire) {
+		this.playerFire = playerFire;
 		if(body == null) {
-			this.body = PhysicManager.createBox(position.x, position.y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, this, world);
-			this.body.setBullet(true);
+			this.body = PhysicManager.createBox(position.x, position.y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, true, this, world);
 		}
 		body.setTransform(position.x, position.y, angle);
 		this.direction = direction;
@@ -58,6 +60,7 @@ public class Bullet extends Entity {
 		dropped = false;
 		lock = true;
 		game.getGameScreen().getBodiesToRemove().add(body);
+		game.getGameScreen().getEntities().remove(this);
 		body = null;
 	}
 
@@ -143,6 +146,14 @@ public class Bullet extends Entity {
 
 	public boolean isDropped() {
 		return dropped;
+	}
+
+	public boolean isSourceOfFire() {
+		return sourceOfFire;
+	}
+
+	public void setSourceOfFire(boolean sourceOfFire) {
+		this.sourceOfFire = sourceOfFire;
 	}
 
 	public void setBody(Body body) {

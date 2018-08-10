@@ -27,8 +27,8 @@ public class Pillar extends Entity {
 		this.assetShadow = assetShadow;
 		this.rectangle = new Rectangle(x - width/2, y - height/2, width, height);
 		this.size = new Vector2(width, height);
-		this.body = PhysicManager.createBox(x, y, width, height, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK, true, this, world);
-		this.bulletCollisionBody = PhysicManager.createBox(x, y - 3f, width, height - 2f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK, true, this, world);
+		this.body = PhysicManager.createBox(x, y, width, height, 0, Constants.PLAYER_WALLS_CATEGORY, Constants.WALLS_MASK, true, false, this, world);
+		this.bulletCollisionBody = PhysicManager.createBox(x, y - 3f, width, height - 2f, 0, Constants.BULLETS_WALLS_CATEGORY, Constants.BULLETS_WALLS_MASK, true, false, this, world);
 	}
 
 	@Override

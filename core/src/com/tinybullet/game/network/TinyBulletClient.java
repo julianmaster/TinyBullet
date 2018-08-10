@@ -93,14 +93,14 @@ public class TinyBulletClient implements Disposable {
 				else if(response instanceof ResponseFireBulletJson) {
 					ResponseFireBulletJson responseFireBulletJson = (ResponseFireBulletJson)response;
 					gameScreen.getLock().lock();
-					if(!gameScreen.getBullets().get(responseFireBulletJson.color).isMove()) {
-						gameScreen.getBullets().get(responseFireBulletJson.color).fire(responseFireBulletJson.position, responseFireBulletJson.angle, responseFireBulletJson.direction);
+					if(!gameScreen.getBullets().get(responseFireBulletJson.color).isSourceOfFire()) {
+						gameScreen.getBullets().get(responseFireBulletJson.color).fire(responseFireBulletJson.position, responseFireBulletJson.angle, responseFireBulletJson.direction, false);
 					}
+					gameScreen.getBullets().get(responseFireBulletJson.color).setSourceOfFire(false);
 					gameScreen.getLock().unlock();
 				}
 				else if(response instanceof ResponsePickUpBulletJson) {
 					ResponsePickUpBulletJson responsePickUpBulletJson = (ResponsePickUpBulletJson)response;
-
 					gameScreen.getLock().lock();
 					if(gameScreen.getPlayer().getColor() == responsePickUpBulletJson.playerColor) {
 						if(responsePickUpBulletJson.pickUp) {
