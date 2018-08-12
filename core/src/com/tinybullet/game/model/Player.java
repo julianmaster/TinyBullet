@@ -21,6 +21,8 @@ public class Player extends Entity {
 	private final GameScreen screen;
 	private final World world;
 
+	private int life = 2;
+
 	private PlayerColor color;
 	private final Vector2 size;
 	private Vector2 oldPosition;
@@ -32,7 +34,16 @@ public class Player extends Entity {
 	public Player(GameScreen screen, World world) {
 		this.screen = screen;
 		this.world = world;
+
 		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
+		this.oldPosition = new Vector2(48, 52);
+		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, world);
+		body.setLinearVelocity(0f, 0f);
+		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, false, this, world);
+	}
+
+	public void init() {
+		life = 2;
 		this.oldPosition = new Vector2(48, 52);
 		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, world);
 		body.setLinearVelocity(0f, 0f);
@@ -104,6 +115,12 @@ public class Player extends Entity {
 		return 0;
 	}
 
+	public void die() {
+		screen.getBodiesToRemove().add(body);
+		screen.getBodiesToRemove().add(bulletCollisionBody);
+		screen.getEntities().remove(this);
+	}
+
 	@Override
 	public Vector2 getPosition() {
 		return body.getPosition();
@@ -112,6 +129,14 @@ public class Player extends Entity {
 	public void setPosition(Vector2 position) {
 		body.setTransform(position.x, position.y, 0f);
 		bulletCollisionBody.setTransform(body.getPosition().x, body.getPosition().y - 2f, 0f);
+	}
+
+	public int getLife() {
+		return life;
+	}
+
+	public void setLife(int life) {
+		this.life = life;
 	}
 
 	public void setColor(PlayerColor color) {

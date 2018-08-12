@@ -156,6 +156,10 @@ public class Bullet extends Entity {
 		this.sourceOfFire = sourceOfFire;
 	}
 
+	public boolean isPlayerFire() {
+		return playerFire;
+	}
+
 	public void setBody(Body body) {
 		this.body = body;
 	}

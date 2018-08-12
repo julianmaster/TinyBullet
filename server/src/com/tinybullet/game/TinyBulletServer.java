@@ -175,6 +175,21 @@ public class TinyBulletServer {
 			}
 			lock.unlock();
 		}
+		else if(request instanceof RequestPlayerDieJson) {
+			RequestPlayerDieJson requestPlayerDieJson = (RequestPlayerDieJson)request;
+			ResponsePlayerDieJson responsePickUpBulletJson = new ResponsePlayerDieJson();
+			responsePickUpBulletJson.color = requestPlayerDieJson.color;
+
+			for(Party party : parties.values()) {
+				if (party.getPlayers().containsKey(webSocket)) {
+
+					// TODO manage party when player die
+					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePickUpBulletJson)));
+					}
+				}
+			}
+		}
 	}
 
 	private void handleSocketClosed(final ServerWebSocket webSocket, final Void frame) {

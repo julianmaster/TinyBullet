@@ -48,7 +48,6 @@ public class GameScreen extends ScreenAdapter {
 		arena = new Arena(world);
 
 		player = new Player(this, world);
-		entities.add(player);
 		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 19,43, 8, 6));
 		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 45,21, 8, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 17,21, 12, 6));
@@ -67,9 +66,9 @@ public class GameScreen extends ScreenAdapter {
 	}
 
 	public void init(PlayerColor color, Vector2 position) {
+		entities.add(player);
 		player.setColor(color);
 		player.setPosition(position);
-
 		player.setBullet(bullets.get(color.initBullet));
 
 		for(OtherPlayer otherPlayer : otherPlayers.values()) {

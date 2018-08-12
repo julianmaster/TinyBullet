@@ -7,6 +7,7 @@ import com.tinybullet.game.model.Bullet;
 import com.tinybullet.game.model.Pillar;
 import com.tinybullet.game.model.Player;
 import com.tinybullet.game.network.json.client.RequestPickUpBulletJson;
+import com.tinybullet.game.network.json.client.RequestPlayerDieJson;
 import com.tinybullet.game.view.GameScreen;
 
 public class EntityContactListener implements ContactListener {
@@ -24,69 +25,65 @@ public class EntityContactListener implements ContactListener {
 		Object objectA = contact.getFixtureA().getBody().getUserData();
 		Object objectB = contact.getFixtureB().getBody().getUserData();
 
-		System.out.println(objectA.getClass().getCanonicalName());
-		System.out.println(objectB.getClass().getCanonicalName());
-
 		screen.getLock().lock();
 		if(objectA instanceof Bullet) {
 			// Bullet vs Pillar/Arena
 			if (objectB instanceof Pillar || objectB instanceof Arena) {
-				Bullet bullet = (Bullet) objectA;
-				if (bullet.isMove()) {
-					bullet.setMove(false);
-					bullet.setDropped(true);
-					for(Fixture fixture : bullet.getBody().getFixtureList()) {
-						Filter filter = fixture.getFilterData();
-						filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
-						filter.maskBits = Constants.BULLETS_DROPPED_MASK;
-						fixture.setFilterData(filter);
-					}
-				}
+				bulletPillarArenaContact(objectA);
 			}
 			// Bullet vs Player
 			else if(objectB instanceof Player) {
-				Bullet bullet = (Bullet) objectA;
-				Player player = (Player) objectB;
-				if(bullet.isDropped()) {
-					bullet.pickUp();
-					player.setBullet(bullet);
-
-					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
-					requestPickUpBulletJson.color = bullet.getColor();
-					screen.getGame().getClient().send(requestPickUpBulletJson);
-				}
+				bulletPlayerContact(objectA, objectB);
 			}
 		}
 		else if(objectB instanceof Bullet) {
 			// Bullet vs Pillar/Arena
 			if (objectA instanceof Pillar || objectA instanceof Arena) {
-				Bullet bullet = (Bullet)objectB;
-				if(bullet.isMove()) {
-					bullet.setMove(false);
-					bullet.setDropped(true);
-					for(Fixture fixture : bullet.getBody().getFixtureList()) {
-						Filter filter = fixture.getFilterData();
-						filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
-						filter.maskBits = Constants.BULLETS_DROPPED_MASK;
-						fixture.setFilterData(filter);
-					}
-				}
+				bulletPillarArenaContact(objectB);
 			}
 			// Bullet vs Player
 			else if(objectA instanceof Player) {
-				Bullet bullet = (Bullet) objectB;
-				Player player = (Player) objectA;
-				if(bullet.isDropped()) {
-					bullet.pickUp();
-					player.setBullet(bullet);
-
-					RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
-					requestPickUpBulletJson.color = bullet.getColor();
-					screen.getGame().getClient().send(requestPickUpBulletJson);
-				}
+				bulletPlayerContact(objectB, objectA);
 			}
 		}
 		screen.getLock().unlock();
+	}
+
+	private void bulletPillarArenaContact(Object bulletObject) {
+		Bullet bullet = (Bullet) bulletObject;
+		if (bullet.isMove()) {
+			bullet.setMove(false);
+			bullet.setDropped(true);
+			for(Fixture fixture : bullet.getBody().getFixtureList()) {
+				Filter filter = fixture.getFilterData();
+				filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
+				filter.maskBits = Constants.BULLETS_DROPPED_MASK;
+				fixture.setFilterData(filter);
+			}
+		}
+	}
+
+	private void bulletPlayerContact(Object bulletObject, Object playerObject) {
+		Bullet bullet = (Bullet) bulletObject;
+		Player player = (Player) playerObject;
+		if(bullet.isDropped()) {
+			bullet.pickUp();
+			player.setBullet(bullet);
+
+			RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
+			requestPickUpBulletJson.color = bullet.getColor();
+			screen.getGame().getClient().send(requestPickUpBulletJson);
+		}
+		else if(!bullet.isPlayerFire()) {
+			player.setLife(player.getLife()-1);
+			if(player.getLife() == 0) {
+				player.die();
+
+				RequestPlayerDieJson requestPlayerDieJson = new RequestPlayerDieJson();
+				requestPlayerDieJson.color = player.getColor();
+				screen.getGame().getClient().send(requestPlayerDieJson);
+			}
+		}
 	}
 
 	@Override
