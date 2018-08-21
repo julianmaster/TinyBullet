@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
+import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.network.json.client.RequestChangePositionPlayerJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
@@ -18,8 +19,7 @@ import com.tinybullet.game.view.GameScreen;
 
 public class Player extends Entity {
 
-	private final GameScreen screen;
-	private final World world;
+	private final TinyBullet game;
 
 	private int life = 2;
 
@@ -31,30 +31,24 @@ public class Player extends Entity {
 
 	private Bullet bullet;
 
-	public Player(GameScreen screen, World world) {
-		this.screen = screen;
-		this.world = world;
-
+	public Player(TinyBullet game) {
+		this.game = game;
 		this.size = new Vector2(Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT);
-		this.oldPosition = new Vector2(48, 52);
-		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, world);
-		body.setLinearVelocity(0f, 0f);
-		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, false, this, world);
 	}
 
 	public void init() {
 		life = 2;
 		this.oldPosition = new Vector2(48, 52);
-		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, world);
+		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, game.getGameScreen().getWorld());
 		body.setLinearVelocity(0f, 0f);
-		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, false, this, world);
+		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, false, this, game.getGameScreen().getWorld());
 	}
 
 	@Override
 	public void update(float delta) {
 		if(Gdx.input.justTouched() && bullet != null && !bullet.isLock()) {
 			Vector3 screenCoords = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0f);
-			Vector3 worldCoords = screen.getGame().getCamera().unproject(screenCoords);
+			Vector3 worldCoords = game.getCamera().unproject(screenCoords);
 
 			float angle = MathUtils.atan2(worldCoords.y - body.getPosition().y + 3f, worldCoords.x - body.getPosition().x);
 			Vector2 direction = new Vector2(MathUtils.cos(angle), MathUtils.sin(angle));
@@ -90,7 +84,7 @@ public class Player extends Entity {
 			oldPosition.set(body.getPosition());
 			RequestChangePositionPlayerJson requestChangePositionPlayerJson = new RequestChangePositionPlayerJson();
 			requestChangePositionPlayerJson.position = body.getPosition();
-			screen.getGame().getClient().send(requestChangePositionPlayerJson);
+			game.getClient().send(requestChangePositionPlayerJson);
 		}
 	}
 
@@ -116,9 +110,9 @@ public class Player extends Entity {
 	}
 
 	public void die() {
-		screen.getBodiesToRemove().add(body);
-		screen.getBodiesToRemove().add(bulletCollisionBody);
-		screen.getEntities().remove(this);
+		game.getGameScreen().getBodiesToRemove().add(body);
+		game.getGameScreen().getBodiesToRemove().add(bulletCollisionBody);
+		game.getGameScreen().getEntities().remove(this);
 	}
 
 	@Override

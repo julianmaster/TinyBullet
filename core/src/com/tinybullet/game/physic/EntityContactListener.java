@@ -2,6 +2,7 @@ package com.tinybullet.game.physic;
 
 import com.badlogic.gdx.physics.box2d.*;
 import com.tinybullet.game.Constants;
+import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.Arena;
 import com.tinybullet.game.model.Bullet;
 import com.tinybullet.game.model.Pillar;
@@ -12,12 +13,10 @@ import com.tinybullet.game.view.GameScreen;
 
 public class EntityContactListener implements ContactListener {
 
-	private final GameScreen screen;
-	private final World world;
+	private final TinyBullet game;
 
-	public EntityContactListener(GameScreen screen, World world) {
-		this.screen = screen;
-		this.world = world;
+	public EntityContactListener(TinyBullet game) {
+		this.game = game;
 	}
 
 	@Override
@@ -25,7 +24,9 @@ public class EntityContactListener implements ContactListener {
 		Object objectA = contact.getFixtureA().getBody().getUserData();
 		Object objectB = contact.getFixtureB().getBody().getUserData();
 
-		screen.getLock().lock();
+		GameScreen gameScreen = game.getGameScreen();
+
+		gameScreen.getLock().lock();
 		if(objectA instanceof Bullet) {
 			// Bullet vs Pillar/Arena
 			if (objectB instanceof Pillar || objectB instanceof Arena) {
@@ -46,7 +47,7 @@ public class EntityContactListener implements ContactListener {
 				bulletPlayerContact(objectB, objectA);
 			}
 		}
-		screen.getLock().unlock();
+		gameScreen.getLock().unlock();
 	}
 
 	private void bulletPillarArenaContact(Object bulletObject) {
@@ -72,7 +73,7 @@ public class EntityContactListener implements ContactListener {
 
 			RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
 			requestPickUpBulletJson.color = bullet.getColor();
-			screen.getGame().getClient().send(requestPickUpBulletJson);
+			game.getClient().send(requestPickUpBulletJson);
 		}
 		else if(!bullet.isPlayerFire()) {
 			player.setLife(player.getLife()-1);
@@ -81,7 +82,7 @@ public class EntityContactListener implements ContactListener {
 
 				RequestPlayerDieJson requestPlayerDieJson = new RequestPlayerDieJson();
 				requestPlayerDieJson.color = player.getColor();
-				screen.getGame().getClient().send(requestPlayerDieJson);
+				game.getClient().send(requestPlayerDieJson);
 			}
 		}
 	}

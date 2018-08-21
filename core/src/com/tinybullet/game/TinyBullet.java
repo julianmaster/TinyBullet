@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -21,6 +22,7 @@ public class TinyBullet extends Game {
 	private Stage stage;
 	private AssetManager assetManager;
 	private BitmapFont font;
+	private GlyphLayout layout;
 
 	// Screens
 	private MenuScreen menuScreen;
@@ -52,6 +54,7 @@ public class TinyBullet extends Game {
 		// Define Font
 		font = assetManager.get(Asset.FONT.filename, BitmapFont.class);
 		font.getData().markupEnabled = true;
+		layout = new GlyphLayout();
 
 		this.setScreen(menuScreen);
 	}
@@ -131,6 +134,10 @@ public class TinyBullet extends Game {
 
 	public BitmapFont getFont() {
 		return font;
+	}
+
+	public GlyphLayout getLayout() {
+		return layout;
 	}
 
 	public MenuScreen getMenuScreen() {

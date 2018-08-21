@@ -1,4 +1,4 @@
 package com.tinybullet.game.network.json.client;
 
-public class RefreshListPartiesJson {
+public class RequestListPartiesJson {
 }

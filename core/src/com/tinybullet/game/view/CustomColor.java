@@ -46,8 +46,7 @@ public class CustomColor {
 	public static final Color PURPLE1 = new Color(0xE38DD6FF);
 	public static final Color PURPLE2 = new Color(0xB45EB3FF);
 	public static final Color PURPLE3 = new Color(0x7F3B86FF);
-	public static final Color PURPLE4 = new Color(0x7F3B86FF);
-	public static final Color PURPLE5 = new Color(0x4D2352FF);
+	public static final Color PURPLE4 = new Color(0x4D2352FF);
 
 	public static void reset() {
 		Colors.getColors().clear();
@@ -94,6 +93,5 @@ public class CustomColor {
 		Colors.put("PURPLE2", CustomColor.PURPLE2);
 		Colors.put("PURPLE3", CustomColor.PURPLE3);
 		Colors.put("PURPLE4", CustomColor.PURPLE4);
-		Colors.put("PURPLE5", CustomColor.PURPLE5);
 	}
 }

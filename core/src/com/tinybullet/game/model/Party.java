@@ -3,18 +3,20 @@ package com.tinybullet.game.model;
 import com.badlogic.gdx.math.Vector2;
 import com.tinybullet.game.network.json.server.ResponsePartyStateJson;
 import com.tinybullet.game.network.json.server.ResponsePositionsPlayersPartyJson;
+import com.tinybullet.game.util.InvertedIntegerComparator;
+import com.tinybullet.game.util.MapUtil;
 import com.tinybullet.game.util.Pair;
 import io.vertx.core.http.ServerWebSocket;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Party {
 	private PartyState state = PartyState.LOBBY;
 	private Map<ServerWebSocket, Pair<PlayerColor, Boolean>> players = new HashMap<>();
-	private HashMap<PlayerColor, Vector2> positions = new LinkedHashMap<>();
-	private HashMap<PlayerColor, BulletColor> bulletsTaked = new LinkedHashMap<>();
+	private Map<PlayerColor, Vector2> positions = new HashMap<>();
+	private Map<PlayerColor, BulletColor> bulletsTaked = new HashMap<>();
+	private Map<PlayerColor, Integer> scores = new LinkedHashMap<>();
+	private List<PlayerColor> playerOrder = new LinkedList<>();
 
 	public boolean addPlayer(ServerWebSocket webSocket) {
 		if(state != PartyState.LOBBY) {
@@ -44,6 +46,7 @@ public class Party {
 		players.put(webSocket, new Pair<>(playerColor, false));
 		Vector2 playerPosition = new Vector2(playerStartPosition.position.x, playerStartPosition.position.y);
 		positions.put(playerColor, playerPosition);
+		scores.put(playerColor, 0);
 	}
 
 	public ResponsePositionsPlayersPartyJson waitStartParty() {
@@ -107,6 +110,29 @@ public class Party {
 		return false;
 	}
 
+	public void playerDie(PlayerColor playerColor) {
+		playerOrder.add(playerColor);
+		if(playerOrder.size() == players.size() - 1) {
+			state = PartyState.SCORE;
+
+			List<PlayerColor> lastPlayerSearch = new ArrayList<>(scores.keySet());
+			lastPlayerSearch.removeAll(playerOrder);
+			playerOrder.addAll(lastPlayerSearch);
+
+			for(int i = 0; i < playerOrder.size(); i++) {
+				scores.put(playerOrder.get(i), scores.get(playerOrder.get(i))+i);
+			}
+
+			MapUtil.orderByValue((LinkedHashMap) scores, new InvertedIntegerComparator());
+
+			for(Map.Entry<PlayerColor, Integer> score : scores.entrySet()) {
+				if(score.getValue() >= 10) {
+					state = PartyState.END;
+				}
+			}
+		}
+	}
+
 	public void removePlayer(ServerWebSocket webSocket) {
 		Pair<PlayerColor, Boolean> value = players.remove(webSocket);
 		if(value != null) {
@@ -124,5 +150,9 @@ public class Party {
 
 	public Map<ServerWebSocket, Pair<PlayerColor, Boolean>> getPlayers() {
 		return players;
+	}
+
+	public Map<PlayerColor, Integer> getScores() {
+		return scores;
 	}
 }

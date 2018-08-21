@@ -6,10 +6,14 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
+import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
 import com.tinybullet.game.model.PartyState;
@@ -40,14 +44,17 @@ public class GameScreen extends ScreenAdapter {
 	// Game state
 	private PartyState state = PartyState.LOBBY;
 
+	// Score
+	Map<PlayerColor, Integer> scores = new LinkedHashMap<>();
+
 	public GameScreen(TinyBullet game) {
 		this.game = game;
 		lock.lock();
 		world = new World(new Vector2(), false);
-		world.setContactListener(new EntityContactListener(this, world));
+		world.setContactListener(new EntityContactListener(game));
 		arena = new Arena(world);
 
-		player = new Player(this, world);
+		player = new Player(game);
 		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 19,43, 8, 6));
 		entities.add(new Pillar(world, Asset.PILLAR1, Asset.PILLAR1_SHADOW, 45,21, 8, 6));
 		entities.add(new Pillar(world, Asset.PILLAR2, Asset.PILLAR2_SHADOW, 17,21, 12, 6));
@@ -66,13 +73,15 @@ public class GameScreen extends ScreenAdapter {
 	}
 
 	public void init(PlayerColor color, Vector2 position) {
-		entities.add(player);
+		player.init();
 		player.setColor(color);
 		player.setPosition(position);
 		player.setBullet(bullets.get(color.initBullet));
+		entities.add(player);
 
 		for(OtherPlayer otherPlayer : otherPlayers.values()) {
 			world.destroyBody(otherPlayer.getBody());
+			entities.remove(otherPlayer);
 		}
 		otherPlayers.clear();
 	}
@@ -89,7 +98,7 @@ public class GameScreen extends ScreenAdapter {
 					otherPlayers.get(playerColors[i]).setPosition(positions[i]);
 				}
 				else {
-					OtherPlayer otherPlayer = new OtherPlayer(playerColors[i], positions[i], world);
+					OtherPlayer otherPlayer = new OtherPlayer(playerColors[i], positions[i], game);
 					otherPlayers.put(playerColors[i], otherPlayer);
 					entities.add(otherPlayer);
 				}
@@ -101,6 +110,9 @@ public class GameScreen extends ScreenAdapter {
 	@Override
 	public void render(float delta) {
 		Batch batch = game.getBatch();
+		BitmapFont font = game.getFont();
+		GlyphLayout layout = game.getLayout();
+		BitmapFontCache cache = game.getFont().getCache();
 		AssetManager assetManager = game.getAssetManager();
 
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
@@ -122,6 +134,8 @@ public class GameScreen extends ScreenAdapter {
 		Collections.sort(entities);
 
 		batch.begin();
+		String info;
+
 		// Ground
 		batch.draw(game.getAssetManager().get(Asset.GROUND.filename, Texture.class), 0, 0);
 
@@ -138,6 +152,28 @@ public class GameScreen extends ScreenAdapter {
 			entity.render(batch, assetManager);
 		}
 		batch.draw(game.getAssetManager().get(Asset.WALL2.filename, Texture.class), 0, 0);
+
+		if(state == PartyState.SCORE) {
+			info = "[WHITE]SCORE";
+			layout.setText(font, info);
+			cache.setText(info, Constants.CAMERA_WIDTH / 2 - layout.width / 2, Constants.CAMERA_HEIGHT - layout.height / 2);
+			cache.draw(batch);
+
+			int i = 0;
+			for(Map.Entry<PlayerColor, Integer> score : scores.entrySet()) {
+				if(score.getKey() == player.getColor()) {
+					info = "["+score.getKey().color+"]"+"[WHITE](You) - "+score.getValue();
+				}
+				else {
+					info = "["+score.getKey().color+"]"+"[WHITE] - "+score.getValue();
+				}
+				layout.setText(font, info);
+				cache.setText(info, Constants.CAMERA_WIDTH / 2 - layout.width / 2, Constants.CAMERA_HEIGHT - layout.height / 2 - 7 - 7*i);
+				cache.draw(batch);
+				i++;
+			}
+		}
+
 		batch.end();
 
 		if(showDebugPhysics) {
@@ -160,12 +196,16 @@ public class GameScreen extends ScreenAdapter {
 		}
 	}
 
-	public TinyBullet getGame() {
-		return game;
+	public World getWorld() {
+		return world;
 	}
 
 	public Player getPlayer() {
 		return player;
+	}
+
+	public Map<PlayerColor, OtherPlayer> getOtherPlayers() {
+		return otherPlayers;
 	}
 
 	public List<Body> getBodiesToRemove() {
@@ -190,5 +230,9 @@ public class GameScreen extends ScreenAdapter {
 
 	public Map<BulletColor, Bullet> getBullets() {
 		return bullets;
+	}
+
+	public Map<PlayerColor, Integer> getScores() {
+		return scores;
 	}
 }

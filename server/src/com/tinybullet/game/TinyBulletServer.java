@@ -2,6 +2,7 @@ package com.tinybullet.game;
 
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
+import com.tinybullet.game.model.PartyState;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.model.Party;
 import com.tinybullet.game.network.json.client.*;
@@ -39,6 +40,7 @@ public class TinyBulletServer {
 		parties.put(1, new Party());
 		parties.put(2, new Party());
 		parties.put(3, new Party());
+		parties.put(4, new Party());
 		parties.put(5, new Party());
 		System.out.println("Go!");
 	}
@@ -46,24 +48,25 @@ public class TinyBulletServer {
 	private void handleFrame(final ServerWebSocket webSocket, final WebSocketFrame frame) {
 		final Object request = serializer.deserialize(frame.binaryData().getBytes());
 
-		if(request instanceof RefreshListPartiesJson) {
+		lock.lock();
+		if(request instanceof RequestListPartiesJson) {
 			int[] list = new int[parties.size()];
+			boolean[] joinnable = new boolean[parties.size()];
 
-			lock.lock();
 			int i = 0;
 			for(Map.Entry<Integer, Party> party : parties.entrySet()) {
 				list[i] = party.getKey();
+				joinnable[i] = party.getValue().getState() == PartyState.LOBBY;
 				i++;
 			}
-			lock.unlock();
 
 			ResponseListPartiesJson responseListPartiesJson = new ResponseListPartiesJson();
 			responseListPartiesJson.list = list;
+			responseListPartiesJson.joinnable = joinnable;
 			webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseListPartiesJson)));
 		}
 		else if(request instanceof RequestJoinPartyJson) {
 			RequestJoinPartyJson requestJoinPartyJson = (RequestJoinPartyJson)request;
-			lock.lock();
 			Party party = parties.get(requestJoinPartyJson.party);
 
 			boolean playerAdded = party != null && party.addPlayer(webSocket);
@@ -77,10 +80,8 @@ public class TinyBulletServer {
 				webSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePlayerStatusPartyJson)));
 			}
 
-			lock.unlock();
 		}
 		else if(request instanceof RequestPlayerStatusPartyJson) {
-			lock.lock();
 			for(Party party : parties.values()) {
 				if(party.getPlayers().containsKey(webSocket)) {
 
@@ -123,10 +124,8 @@ public class TinyBulletServer {
 					break;
 				}
 			}
-			lock.unlock();
 		}
 		else if(request instanceof RequestChangePositionPlayerJson) {
-			lock.lock();
 			for(Party party : parties.values()) {
 				if(party.getPlayers().containsKey(webSocket)) {
 					ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = party.changePlayerPosition(webSocket, ((RequestChangePositionPlayerJson)request).position);
@@ -136,7 +135,6 @@ public class TinyBulletServer {
 					break;
 				}
 			}
-			lock.unlock();
 		}
 		else if(request instanceof RequestFireBulletJson) {
 			RequestFireBulletJson requestFireBulletJson = (RequestFireBulletJson)request;
@@ -146,7 +144,6 @@ public class TinyBulletServer {
 			responseFireBulletJson.color = requestFireBulletJson.color;
 			responseFireBulletJson.direction = requestFireBulletJson.direction;
 
-			lock.lock();
 			for(Party party : parties.values()) {
 				if (party.getPlayers().containsKey(webSocket) && party.fireBullet(webSocket, requestFireBulletJson.color)) {
 					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
@@ -155,13 +152,11 @@ public class TinyBulletServer {
 					break;
 				}
 			}
-			lock.unlock();
 		}
 		else if(request instanceof RequestPickUpBulletJson) {
 			RequestPickUpBulletJson requestPickUpBulletJson = (RequestPickUpBulletJson)request;
 			ResponsePickUpBulletJson responsePickUpBulletJson = new ResponsePickUpBulletJson();
 
-			lock.lock();
 			for(Party party : parties.values()) {
 				if (party.getPlayers().containsKey(webSocket)) {
 					responsePickUpBulletJson.playerColor = party.getPlayers().get(webSocket).key;
@@ -173,23 +168,55 @@ public class TinyBulletServer {
 					break;
 				}
 			}
-			lock.unlock();
 		}
 		else if(request instanceof RequestPlayerDieJson) {
 			RequestPlayerDieJson requestPlayerDieJson = (RequestPlayerDieJson)request;
-			ResponsePlayerDieJson responsePickUpBulletJson = new ResponsePlayerDieJson();
-			responsePickUpBulletJson.color = requestPlayerDieJson.color;
+			ResponsePlayerDieJson responsePlayerDieJson = new ResponsePlayerDieJson();
+			responsePlayerDieJson.color = requestPlayerDieJson.color;
 
 			for(Party party : parties.values()) {
 				if (party.getPlayers().containsKey(webSocket)) {
 
-					// TODO manage party when player die
+					party.playerDie(requestPlayerDieJson.color);
+
 					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
-						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePickUpBulletJson)));
+						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePlayerDieJson)));
+					}
+
+					if(party.getState() == PartyState.SCORE || party.getState() == PartyState.END) {
+						ResponseScorePartyJson responseScorePartyJson = new ResponseScorePartyJson();
+						responseScorePartyJson.players = new PlayerColor[party.getScores().size()];
+						responseScorePartyJson.scores = new Integer[party.getScores().size()];
+
+						int i = 0;
+						for(Map.Entry<PlayerColor, Integer> score : party.getScores().entrySet()) {
+							responseScorePartyJson.players[i] = score.getKey();
+							responseScorePartyJson.scores[i] = score.getValue();
+							i++;
+						}
+
+						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+							serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseScorePartyJson)));
+						}
+					}
+
+					if(party.getState() == PartyState.END) {
+						vertx.setTimer(5000L, new Handler<Long>() {
+							@Override
+							public void handle(Long event) {
+								lock.lock();
+								ResponsePartyEndJson responsePartyEndJson = new ResponsePartyEndJson();
+								for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+									serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyEndJson)));
+								}
+								lock.unlock();
+							}
+						});
 					}
 				}
 			}
 		}
+		lock.unlock();
 	}
 
 	private void handleSocketClosed(final ServerWebSocket webSocket, final Void frame) {
@@ -205,6 +232,8 @@ public class TinyBulletServer {
 		for(Integer num : nums) {
 			parties.remove(num);
 		}
+
+		// TODO manage player quit during party
 		lock.unlock();
 	}
 
@@ -228,7 +257,7 @@ public class TinyBulletServer {
 		}
 	}
 
-	public static void main (String[] arg) throws Exception {
+	public static void main (String[] arg) {
 		new TinyBulletServer().launch();
 	}
 }

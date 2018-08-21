@@ -10,14 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.PlayerColor;
-import com.tinybullet.game.network.json.client.RefreshListPartiesJson;
-import com.tinybullet.game.network.json.client.RequestJoinPartyJson;
 import com.tinybullet.game.network.json.client.RequestPlayerStatusPartyJson;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PartyScreen extends ScreenAdapter {
@@ -25,8 +19,6 @@ public class PartyScreen extends ScreenAdapter {
 	private final TinyBullet game;
 
 	private ReentrantLock lock = new ReentrantLock();
-
-	private GlyphLayout layout = new GlyphLayout();
 
 	private PlayerColor[] players;
 	private boolean[] readies;
@@ -41,6 +33,7 @@ public class PartyScreen extends ScreenAdapter {
 	@Override
 	public void show() {
 		BitmapFont font = game.getFont();
+		GlyphLayout layout = game.getLayout();
 
 		readyButton = new TextActionButton("[RED1]Not Ready", game);
 		layout.setText(font, "Not Ready");
@@ -76,6 +69,7 @@ public class PartyScreen extends ScreenAdapter {
 	public void render(float delta) {
 		Batch batch = game.getBatch();
 		BitmapFont font = game.getFont();
+		GlyphLayout layout = game.getLayout();
 		BitmapFontCache cache = game.getFont().getCache();
 
 		batch.begin();
@@ -97,7 +91,7 @@ public class PartyScreen extends ScreenAdapter {
 				cache.draw(batch);
 			}
 			else {
-				info = "["+partyPlayerColor.color+"]"+partyPlayerColor.name()+"[WHITE] - P"+i;
+				info = "["+partyPlayerColor.color+"]"+partyPlayerColor.name();
 				cache.setText(info, 2, Constants.CAMERA_HEIGHT - layout.height / 2 - 7 - 7*i);
 				cache.draw(batch);
 			}
