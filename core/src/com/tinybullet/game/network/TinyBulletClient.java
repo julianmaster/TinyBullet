@@ -122,6 +122,9 @@ public class TinyBulletClient implements Disposable {
 					}
 					gameScreen.getLock().unlock();
 				}
+				else if(response instanceof ResponseBulletTouchPlayerJson) {
+					// TODO Change bullet to dropped bullet at the position
+				}
 				else if(response instanceof ResponsePlayerDieJson) {
 					ResponsePlayerDieJson responsePlayerDieJson = (ResponsePlayerDieJson)response;
 					lock.lock();

@@ -33,7 +33,7 @@ public class Constants {
 	public static final short WALLS_MASK = PLAYER_CATEGORY;
 	public static final short OTHERS_PLAYER_MASK = PLAYER_CATEGORY;
 
-	public static final short BULLETS_MASK = BULLETS_WALLS_CATEGORY;
+	public static final short BULLETS_MASK = BULLETS_WALLS_CATEGORY | BULLETS_PLAYER_CATEGORY;
 	public static final short BULLETS_DROPPED_MASK = BULLETS_WALLS_CATEGORY | BULLETS_PLAYER_CATEGORY;
 	public static final short BULLETS_WALLS_MASK = BULLETS_CATEGORY;
 	public static final short BULLETS_PLAYERS_MASK = BULLETS_CATEGORY | BULLETS_DROPPED_CATEGORY;

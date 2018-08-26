@@ -102,6 +102,10 @@ public class Party {
 		return false;
 	}
 
+	public boolean isFiredBullet(BulletColor color) {
+		return !bulletsTaked.values().contains(color);
+	}
+
 	public boolean pickUpBullet(ServerWebSocket webSocket, BulletColor color) {
 		if(!bulletsTaked.values().contains(color)) {
 			bulletsTaked.put(players.get(webSocket).key, color);

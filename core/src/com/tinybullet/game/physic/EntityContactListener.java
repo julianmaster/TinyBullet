@@ -7,6 +7,7 @@ import com.tinybullet.game.model.Arena;
 import com.tinybullet.game.model.Bullet;
 import com.tinybullet.game.model.Pillar;
 import com.tinybullet.game.model.Player;
+import com.tinybullet.game.network.json.client.RequestBulletTouchPlayerJson;
 import com.tinybullet.game.network.json.client.RequestPickUpBulletJson;
 import com.tinybullet.game.network.json.client.RequestPlayerDieJson;
 import com.tinybullet.game.view.GameScreen;
@@ -53,21 +54,14 @@ public class EntityContactListener implements ContactListener {
 	private void bulletPillarArenaContact(Object bulletObject) {
 		Bullet bullet = (Bullet) bulletObject;
 		if (bullet.isMove()) {
-			bullet.setMove(false);
-			bullet.setDropped(true);
-			for(Fixture fixture : bullet.getBody().getFixtureList()) {
-				Filter filter = fixture.getFilterData();
-				filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
-				filter.maskBits = Constants.BULLETS_DROPPED_MASK;
-				fixture.setFilterData(filter);
-			}
+			bullet.drop();
 		}
 	}
 
 	private void bulletPlayerContact(Object bulletObject, Object playerObject) {
 		Bullet bullet = (Bullet) bulletObject;
 		Player player = (Player) playerObject;
-		if(bullet.isDropped()) {
+		if(bullet.isDropped() && player.getBullet() == null) {
 			bullet.pickUp();
 			player.setBullet(bullet);
 
@@ -76,6 +70,7 @@ public class EntityContactListener implements ContactListener {
 			game.getClient().send(requestPickUpBulletJson);
 		}
 		else if(!bullet.isPlayerFire()) {
+			System.out.println("touché");
 			player.setLife(player.getLife()-1);
 			if(player.getLife() == 0) {
 				player.die();
@@ -84,6 +79,12 @@ public class EntityContactListener implements ContactListener {
 				requestPlayerDieJson.color = player.getColor();
 				game.getClient().send(requestPlayerDieJson);
 			}
+
+			bullet.drop();
+
+			RequestBulletTouchPlayerJson requestBulletTouchPlayerJson = new RequestBulletTouchPlayerJson();
+			requestBulletTouchPlayerJson.color = bullet.getColor();
+			requestBulletTouchPlayerJson.position = bullet.getPosition();
 		}
 	}
 

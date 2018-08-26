@@ -146,6 +146,10 @@ public class Player extends Entity {
 		return size;
 	}
 
+	public Bullet getBullet() {
+		return bullet;
+	}
+
 	public void setBullet(Bullet bullet) {
 		this.bullet = bullet;
 	}

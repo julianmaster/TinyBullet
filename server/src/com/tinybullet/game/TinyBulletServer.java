@@ -153,6 +153,20 @@ public class TinyBulletServer {
 				}
 			}
 		}
+		else if(request instanceof RequestBulletTouchPlayerJson) {
+			RequestBulletTouchPlayerJson requestBulletTouchPlayerJson = (RequestBulletTouchPlayerJson)request;
+			ResponseBulletTouchPlayerJson responseBulletTouchPlayerJson = new ResponseBulletTouchPlayerJson();
+			responseBulletTouchPlayerJson.color = requestBulletTouchPlayerJson.color;
+			responseBulletTouchPlayerJson.position = requestBulletTouchPlayerJson.position;
+
+			for(Party party : parties.values()) {
+				if(party.getPlayers().containsKey(webSocket) && party.isFiredBullet(requestBulletTouchPlayerJson.color)) {
+					for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseBulletTouchPlayerJson)));
+					}
+				}
+			}
+		}
 		else if(request instanceof RequestPickUpBulletJson) {
 			RequestPickUpBulletJson requestPickUpBulletJson = (RequestPickUpBulletJson)request;
 			ResponsePickUpBulletJson responsePickUpBulletJson = new ResponsePickUpBulletJson();
