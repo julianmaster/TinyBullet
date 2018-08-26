@@ -10,6 +10,7 @@ import com.github.czyzby.websocket.data.WebSocketException;
 import com.github.czyzby.websocket.net.ExtendedNet;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
+import com.tinybullet.game.model.Bullet;
 import com.tinybullet.game.model.OtherPlayer;
 import com.tinybullet.game.model.PartyState;
 import com.tinybullet.game.model.PlayerColor;
@@ -123,7 +124,13 @@ public class TinyBulletClient implements Disposable {
 					gameScreen.getLock().unlock();
 				}
 				else if(response instanceof ResponseBulletTouchPlayerJson) {
-					// TODO Change bullet to dropped bullet at the position
+					ResponseBulletTouchPlayerJson responseBulletTouchPlayerJson = (ResponseBulletTouchPlayerJson) response;
+					Bullet bullet = gameScreen.getBullets().get(responseBulletTouchPlayerJson.color);
+
+					if(bullet!= null && bullet.isMove()) {
+						bullet.drop();
+						bullet.getBody().setTransform(responseBulletTouchPlayerJson.position, bullet.getBody().getAngle());
+					}
 				}
 				else if(response instanceof ResponsePlayerDieJson) {
 					ResponsePlayerDieJson responsePlayerDieJson = (ResponsePlayerDieJson)response;
