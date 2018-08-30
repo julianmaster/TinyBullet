@@ -9,13 +9,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.Filter;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.network.json.client.RequestChangePositionPlayerJson;
 import com.tinybullet.game.physic.PhysicManager;
 import com.tinybullet.game.view.Asset;
-import com.tinybullet.game.view.GameScreen;
 
 public class Player extends Entity {
 
@@ -41,7 +41,27 @@ public class Player extends Entity {
 		this.oldPosition = new Vector2(48, 52);
 		this.body = PhysicManager.createBox(48, 52, Constants.PLAYER_COLLISION_WIDTH, Constants.PLAYER_COLLISION_HEIGHT, 0, Constants.PLAYER_CATEGORY, Constants.PLAYER_MASK, false, false, this, game.getGameScreen().getWorld());
 		body.setLinearVelocity(0f, 0f);
-		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLETS_PLAYER_CATEGORY, Constants.BULLETS_PLAYERS_MASK, false, false, this, game.getGameScreen().getWorld());
+		this.bulletCollisionBody = PhysicManager.createBox(48, 52 - 2f, Constants.PLAYER_COLLISION_WIDTH, 5f, 0, Constants.BULLET_PLAYER_CATEGORY, Constants.BULLET_PLAYER_MASK, false, false, this, game.getGameScreen().getWorld());
+	}
+
+	public void fire() {
+		this.bullet = null;
+		for(Fixture fixture : bulletCollisionBody.getFixtureList()) {
+			Filter filter = fixture.getFilterData();
+			filter.categoryBits = Constants.BULLET_PLAYER_WITHOUT_BULLET_CATEGORY;
+			filter.maskBits = Constants.BULLET_PLAYER_WITHOUT_BULLET_MASK;
+			fixture.setFilterData(filter);
+		}
+	}
+
+	public void pickUp(Bullet bullet) {
+		this.bullet = bullet;
+		for(Fixture fixture : bulletCollisionBody.getFixtureList()) {
+			Filter filter = fixture.getFilterData();
+			filter.categoryBits = Constants.BULLET_PLAYER_CATEGORY;
+			filter.maskBits = Constants.BULLET_PLAYER_MASK;
+			fixture.setFilterData(filter);
+		}
 	}
 
 	@Override
@@ -55,7 +75,7 @@ public class Player extends Entity {
 
 			bullet.setSourceOfFire(true);
 			bullet.fire(new Vector2(body.getPosition().x, body.getPosition().y - 3f), angle, direction, true);
-			bullet = null;
+			fire();
 		}
 
 

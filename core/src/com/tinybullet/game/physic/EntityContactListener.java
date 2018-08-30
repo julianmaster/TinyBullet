@@ -63,13 +63,13 @@ public class EntityContactListener implements ContactListener {
 		Player player = (Player) playerObject;
 		if(bullet.isDropped() && player.getBullet() == null) {
 			bullet.pickUp();
-			player.setBullet(bullet);
+			player.pickUp(bullet);
 
 			RequestPickUpBulletJson requestPickUpBulletJson = new RequestPickUpBulletJson();
 			requestPickUpBulletJson.color = bullet.getColor();
 			game.getClient().send(requestPickUpBulletJson);
 		}
-		else if(!bullet.isPlayerFire()) {
+		else if(!bullet.isDropped() && !bullet.isPlayerFire()) {
 			System.out.println("touché");
 			player.setLife(player.getLife()-1);
 			if(player.getLife() == 0) {

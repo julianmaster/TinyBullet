@@ -41,7 +41,12 @@ public class Bullet extends Entity {
 	public void fire(Vector2 position, float angle, Vector2 direction, boolean playerFire) {
 		this.playerFire = playerFire;
 		if(body == null) {
-			this.body = PhysicManager.createBox(position.x, position.y, 2f, 1f, angle, Constants.BULLETS_CATEGORY, Constants.BULLETS_MASK, false, true, this, world);
+			if(playerFire) {
+				this.body = PhysicManager.createBox(position.x, position.y, 2f, 1f, angle, Constants.BULLET_MOVE_CATEGORY, Constants.BULLET_MOVE_MASK, false, true, this, world);
+			}
+			else {
+				this.body = PhysicManager.createBox(position.x, position.y, 2f, 1f, angle, Constants.OTHER_BULLET_CATEGORY, Constants.OTHER_BULLET_MOVE_MASK, false, true, this, world);
+			}
 		}
 		body.setTransform(position.x, position.y, angle);
 		this.direction = direction;
@@ -63,8 +68,8 @@ public class Bullet extends Entity {
 		dropped = true;
 		for(Fixture fixture : body.getFixtureList()) {
 			Filter filter = fixture.getFilterData();
-			filter.categoryBits = Constants.BULLETS_DROPPED_CATEGORY;
-			filter.maskBits = Constants.BULLETS_DROPPED_MASK;
+			filter.categoryBits = Constants.BULLET_DROPPED_CATEGORY;
+			filter.maskBits = Constants.BULLET_DROPPED_MASK;
 			fixture.setFilterData(filter);
 		}
 	}

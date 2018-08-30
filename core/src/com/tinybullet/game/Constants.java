@@ -22,22 +22,25 @@ public class Constants {
 //	public static final float BULLET_SPEED = 1f;
 
 	public static final short PLAYER_CATEGORY = 1;
-	public static final short PLAYER_WALLS_CATEGORY = 2;
-	public static final short OTHERS_PLAYER_CATEGORY = 4;
-	public static final short BULLETS_CATEGORY = 8;
-	public static final short OTHER_BULLETS_CATEGORY = 16;
-	public static final short BULLETS_WALLS_CATEGORY = 32;
-	public static final short BULLETS_PLAYER_CATEGORY = 64;
-	public static final short BULLETS_DROPPED_CATEGORY = 128;
+	public static final short OTHER_PLAYER_CATEGORY = 2;
+	public static final short PLAYER_WALL_CATEGORY = 4;
+	public static final short BULLET_MOVE_CATEGORY = 8;
+	public static final short OTHER_BULLET_CATEGORY = 16;
+	public static final short BULLET_DROPPED_CATEGORY = 32;
+	public static final short BULLET_WALL_CATEGORY = 64;
+	public static final short BULLET_PLAYER_CATEGORY = 128;
+	public static final short BULLET_PLAYER_WITHOUT_BULLET_CATEGORY = 256;
 
-	public static final short PLAYER_MASK = PLAYER_CATEGORY | PLAYER_WALLS_CATEGORY | OTHERS_PLAYER_CATEGORY;
-	public static final short WALLS_MASK = PLAYER_CATEGORY;
-	public static final short OTHERS_PLAYER_MASK = PLAYER_CATEGORY;
+	public static final short PLAYER_MASK = OTHER_PLAYER_CATEGORY | PLAYER_WALL_CATEGORY | OTHER_BULLET_CATEGORY;
+	public static final short OTHER_PLAYER_MASK = PLAYER_CATEGORY;
+	public static final short WALL_MASK = PLAYER_CATEGORY;
 
-	public static final short BULLETS_MASK = BULLETS_WALLS_CATEGORY | BULLETS_PLAYER_CATEGORY;
-	public static final short BULLETS_DROPPED_MASK = BULLETS_WALLS_CATEGORY | BULLETS_PLAYER_CATEGORY;
-	public static final short BULLETS_WALLS_MASK = BULLETS_CATEGORY;
-	public static final short BULLETS_PLAYERS_MASK = BULLETS_CATEGORY | BULLETS_DROPPED_CATEGORY;
+	public static final short BULLET_MOVE_MASK = BULLET_WALL_CATEGORY;
+	public static final short OTHER_BULLET_MOVE_MASK = BULLET_WALL_CATEGORY | PLAYER_CATEGORY;
+	public static final short BULLET_DROPPED_MASK = BULLET_WALL_CATEGORY | BULLET_PLAYER_WITHOUT_BULLET_CATEGORY;
+	public static final short BULLET_WALL_MASK = BULLET_MOVE_CATEGORY | OTHER_BULLET_CATEGORY | BULLET_DROPPED_CATEGORY;
+	public static final short BULLET_PLAYER_MASK = BULLET_MOVE_CATEGORY | OTHER_BULLET_CATEGORY;
+	public static final short BULLET_PLAYER_WITHOUT_BULLET_MASK = BULLET_MOVE_CATEGORY | OTHER_BULLET_CATEGORY | BULLET_DROPPED_CATEGORY;
 
 	public static final Color BULLET_PLAYER1_HALO = new Color(0xc42c36b4);
 	public static final Color BULLET_PLAYER2_HALO = new Color(0x7bcf5cb4);
