@@ -2,7 +2,7 @@ package com.tinybullet.game;
 
 import com.github.czyzby.websocket.serialization.Serializer;
 import com.github.czyzby.websocket.serialization.impl.JsonSerializer;
-import com.tinybullet.game.model.PartyState;
+import com.tinybullet.game.model.State;
 import com.tinybullet.game.model.PlayerColor;
 import com.tinybullet.game.model.Party;
 import com.tinybullet.game.network.json.client.*;
@@ -56,7 +56,7 @@ public class TinyBulletServer {
 			int i = 0;
 			for(Map.Entry<Integer, Party> party : parties.entrySet()) {
 				list[i] = party.getKey();
-				joinnable[i] = party.getValue().getState() == PartyState.LOBBY;
+				joinnable[i] = party.getValue().getState() == State.PARTY;
 				i++;
 			}
 
@@ -89,22 +89,30 @@ public class TinyBulletServer {
 
 					// Check if all players are readies to start party
 					boolean runParty = true;
-					for(Pair<PlayerColor, Boolean> player : party.getPlayers().values()) {
-						runParty = runParty && player.value;
+					if(party.getPlayers().values().size() < 2) {
+						runParty = false;
+					}
+					else {
+						for(Pair<PlayerColor, Boolean> player : party.getPlayers().values()) {
+							runParty = runParty && player.value;
+						}
 					}
 
 					if(runParty) {
-						// TODO Verify if there is more than 1 player
-
 						// All players are readies
 						ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = party.waitStartParty();
 						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
 							serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePositionsPlayersPartyJson)));
 						}
 
+						ResponsePartyStateJson responsePartyStateJson = new ResponsePartyStateJson();
+						responsePartyStateJson.state = party.getState();
+						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+							serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyStateJson)));
+						}
+
 						// Send a ResponsePartyStateJson for start the game after 3 seconds
-//						vertx.setTimer(3000L, new Handler<Long>() {
-						vertx.setTimer(100L, new Handler<Long>() {
+						vertx.setTimer(3000L, new Handler<Long>() {
 							@Override
 							public void handle(Long event) {
 								lock.lock();
@@ -188,7 +196,9 @@ public class TinyBulletServer {
 			ResponsePlayerDieJson responsePlayerDieJson = new ResponsePlayerDieJson();
 			responsePlayerDieJson.color = requestPlayerDieJson.color;
 
-			for(Party party : parties.values()) {
+			Integer partyToRemove = null;
+			for(Map.Entry<Integer, Party> entry : parties.entrySet()) {
+				Party party = entry.getValue();
 				if (party.getPlayers().containsKey(webSocket)) {
 
 					party.playerDie(requestPlayerDieJson.color);
@@ -197,7 +207,7 @@ public class TinyBulletServer {
 						serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePlayerDieJson)));
 					}
 
-					if(party.getState() == PartyState.SCORE || party.getState() == PartyState.END) {
+					if(party.getState() == State.SCORE || party.getState() == State.MENU) {
 						ResponseScorePartyJson responseScorePartyJson = new ResponseScorePartyJson();
 						responseScorePartyJson.players = new PlayerColor[party.getScores().size()];
 						responseScorePartyJson.scores = new Integer[party.getScores().size()];
@@ -212,22 +222,69 @@ public class TinyBulletServer {
 						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
 							serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseScorePartyJson)));
 						}
+
+						ResponsePartyStateJson responsePartyStateJson = new ResponsePartyStateJson();
+						responsePartyStateJson.state = State.SCORE;
+						for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+							serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responseScorePartyJson)));
+						}
 					}
 
-					if(party.getState() == PartyState.END) {
+					if(party.getState() == State.MENU) {
 						vertx.setTimer(5000L, new Handler<Long>() {
 							@Override
 							public void handle(Long event) {
 								lock.lock();
-								ResponsePartyEndJson responsePartyEndJson = new ResponsePartyEndJson();
+								ResponsePartyStateJson responsePartyStateJson = new ResponsePartyStateJson();
+								responsePartyStateJson.state = party.getState();
 								for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
-									serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyEndJson)));
+									serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyStateJson)));
 								}
 								lock.unlock();
 							}
 						});
+						partyToRemove = entry.getKey();
 					}
+					else {
+						vertx.setTimer(5000L, new Handler<Long>() {
+							@Override
+							public void handle(Long event) {
+								lock.lock();
+								party.restartParty();
+
+								ResponsePositionsPlayersPartyJson responsePositionsPlayersPartyJson = party.waitStartParty();
+								for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+									serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePositionsPlayersPartyJson)));
+								}
+
+								ResponsePartyStateJson responsePartyStateJson = new ResponsePartyStateJson();
+								responsePartyStateJson.state = party.getState();
+								for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+									serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyStateJson)));
+								}
+
+								// Send a ResponsePartyStateJson for start the game after 3 seconds
+								vertx.setTimer(3000L, new Handler<Long>() {
+									@Override
+									public void handle(Long event) {
+										lock.lock();
+										ResponsePartyStateJson responsePartyStateJson = party.startParty();
+										for(ServerWebSocket serverWebSocket : party.getPlayers().keySet()) {
+											serverWebSocket.writeBinaryMessage(Buffer.buffer(serializer.serialize(responsePartyStateJson)));
+										}
+										lock.unlock();
+									}
+								});
+								lock.unlock();
+							}
+						});
+					}
+					break;
 				}
+			}
+
+			if(partyToRemove != null) {
+				parties.remove(partyToRemove);
 			}
 		}
 		lock.unlock();

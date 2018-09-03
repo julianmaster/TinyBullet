@@ -70,7 +70,6 @@ public class EntityContactListener implements ContactListener {
 			game.getClient().send(requestPickUpBulletJson);
 		}
 		else if(!bullet.isDropped() && !bullet.isPlayerFire()) {
-			System.out.println("touché");
 			player.setLife(player.getLife()-1);
 			if(player.getLife() == 0) {
 				player.die();
@@ -85,6 +84,7 @@ public class EntityContactListener implements ContactListener {
 			RequestBulletTouchPlayerJson requestBulletTouchPlayerJson = new RequestBulletTouchPlayerJson();
 			requestBulletTouchPlayerJson.color = bullet.getColor();
 			requestBulletTouchPlayerJson.position = bullet.getPosition();
+			game.getClient().send(requestBulletTouchPlayerJson);
 		}
 	}
 

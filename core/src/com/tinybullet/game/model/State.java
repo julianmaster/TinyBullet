@@ -1,9 +1,9 @@
 package com.tinybullet.game.model;
 
-public enum PartyState {
-	LOBBY,
+public enum State {
+	MENU,
+	PARTY,
 	WAIT_START,
 	PLAY,
-	SCORE,
-	END
+	SCORE
 }

@@ -16,7 +16,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.tinybullet.game.Constants;
 import com.tinybullet.game.TinyBullet;
 import com.tinybullet.game.model.*;
-import com.tinybullet.game.model.PartyState;
+import com.tinybullet.game.model.State;
 import com.tinybullet.game.physic.EntityContactListener;
 
 import java.util.*;
@@ -41,11 +41,11 @@ public class GameScreen extends ScreenAdapter {
 	private boolean showDebugPhysics = false;
 	private Box2DDebugRenderer debugRenderer = new Box2DDebugRenderer();
 
-	// Game state
-	private PartyState state = PartyState.LOBBY;
-
 	// Score
-	Map<PlayerColor, Integer> scores = new LinkedHashMap<>();
+	private Map<PlayerColor, Integer> scores = new LinkedHashMap<>();
+
+	// Timer
+	private float timer;
 
 	public GameScreen(TinyBullet game) {
 		this.game = game;
@@ -84,6 +84,8 @@ public class GameScreen extends ScreenAdapter {
 			entities.remove(otherPlayer);
 		}
 		otherPlayers.clear();
+
+		timer = 3.99f;
 	}
 
 	@Override
@@ -115,6 +117,13 @@ public class GameScreen extends ScreenAdapter {
 		BitmapFontCache cache = game.getFont().getCache();
 		AssetManager assetManager = game.getAssetManager();
 
+		if(game.getState() == State.WAIT_START) {
+			timer -= delta;
+			if(timer < 1) {
+				timer = 1.0f;
+			}
+		}
+
 		if(Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
 			showDebugPhysics = !showDebugPhysics;
 		}
@@ -125,7 +134,7 @@ public class GameScreen extends ScreenAdapter {
 		}
 		entitiesToAdd.clear();
 
-		if(state == PartyState.PLAY) {
+		if(game.getState() == State.PLAY) {
 			for(Entity entity : entities) {
 				entity.update(delta);
 			}
@@ -153,7 +162,7 @@ public class GameScreen extends ScreenAdapter {
 		}
 		batch.draw(game.getAssetManager().get(Asset.WALL2.filename, Texture.class), 0, 0);
 
-		if(state == PartyState.SCORE) {
+		if(game.getState() == State.SCORE) {
 			info = "[WHITE]SCORE";
 			layout.setText(font, info);
 			cache.setText(info, Constants.CAMERA_WIDTH / 2 - layout.width / 2, Constants.CAMERA_HEIGHT - layout.height / 2);
@@ -172,6 +181,13 @@ public class GameScreen extends ScreenAdapter {
 				cache.draw(batch);
 				i++;
 			}
+		}
+
+		if(game.getState() == State.WAIT_START) {
+			info = "[WHITE]"+(int)timer;
+			layout.setText(font, info);
+			cache.setText(info, Constants.CAMERA_WIDTH / 2 - layout.width / 2, Constants.CAMERA_HEIGHT / 2 - layout.height / 2);
+			cache.draw(batch);
 		}
 
 		batch.end();
@@ -214,10 +230,6 @@ public class GameScreen extends ScreenAdapter {
 
 	public ReentrantLock getLock() {
 		return lock;
-	}
-
-	public void setState(PartyState state) {
-		this.state = state;
 	}
 
 	public List<Entity> getEntitiesToAdd() {

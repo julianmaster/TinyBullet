@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.tinybullet.game.model.State;
 import com.tinybullet.game.network.TinyBulletClient;
 import com.tinybullet.game.view.*;
 
@@ -31,6 +32,9 @@ public class TinyBullet extends Game {
 
 	// Network
 	private TinyBulletClient client;
+
+	// Game State
+	private State state = State.MENU;
 
 	@Override
 	public void create () {
@@ -150,5 +154,13 @@ public class TinyBullet extends Game {
 
 	public GameScreen getGameScreen() {
 		return gameScreen;
+	}
+
+	public void setState(State state) {
+		this.state = state;
+	}
+
+	public State getState() {
+		return state;
 	}
 }

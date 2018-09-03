@@ -11,7 +11,7 @@ import io.vertx.core.http.ServerWebSocket;
 import java.util.*;
 
 public class Party {
-	private PartyState state = PartyState.LOBBY;
+	private State state = State.PARTY;
 	private Map<ServerWebSocket, Pair<PlayerColor, Boolean>> players = new HashMap<>();
 	private Map<PlayerColor, Vector2> positions = new HashMap<>();
 	private Map<PlayerColor, BulletColor> bulletsTaked = new HashMap<>();
@@ -19,38 +19,57 @@ public class Party {
 	private List<PlayerColor> playerOrder = new LinkedList<>();
 
 	public boolean addPlayer(ServerWebSocket webSocket) {
-		if(state != PartyState.LOBBY) {
+		if(state != State.PARTY) {
 			return false;
 		}
 
 		if(!positions.containsKey(PlayerColor.RED)) {
-			initPlayerPosition(webSocket, PlayerColor.RED, PlayerStartPosition.RED);
+			initPlayerInParty(webSocket, PlayerColor.RED, PlayerStartPosition.RED);
 			return true;
 		}
 		else if(!positions.containsKey(PlayerColor.GREEN)) {
-			initPlayerPosition(webSocket, PlayerColor.GREEN, PlayerStartPosition.GREEN);
+			initPlayerInParty(webSocket, PlayerColor.GREEN, PlayerStartPosition.GREEN);
 			return true;
 		}
 		else if(!positions.containsKey(PlayerColor.YELLOW)) {
-			initPlayerPosition(webSocket, PlayerColor.YELLOW, PlayerStartPosition.YELLOW);
+			initPlayerInParty(webSocket, PlayerColor.YELLOW, PlayerStartPosition.YELLOW);
 			return true;
 		}
 		else if(!positions.containsKey(PlayerColor.PURPLE)) {
-			initPlayerPosition(webSocket, PlayerColor.PURPLE, PlayerStartPosition.PURPLE);
+			initPlayerInParty(webSocket, PlayerColor.PURPLE, PlayerStartPosition.PURPLE);
 			return true;
 		}
 		return false;
 	}
 
-	private void initPlayerPosition(ServerWebSocket webSocket, PlayerColor playerColor, PlayerStartPosition playerStartPosition) {
+	private void initPlayerInParty(ServerWebSocket webSocket, PlayerColor playerColor, PlayerStartPosition playerStartPosition) {
 		players.put(webSocket, new Pair<>(playerColor, false));
+		scores.put(playerColor, 0);
+		initPlayerPosition(playerColor, playerStartPosition);
+	}
+
+	private void initPlayerPosition(PlayerColor playerColor, PlayerStartPosition playerStartPosition) {
 		Vector2 playerPosition = new Vector2(playerStartPosition.position.x, playerStartPosition.position.y);
 		positions.put(playerColor, playerPosition);
-		scores.put(playerColor, 0);
+	}
+
+	public void restartParty() {
+		if(!positions.containsKey(PlayerColor.RED)) {
+			initPlayerPosition(PlayerColor.RED, PlayerStartPosition.RED);
+		}
+		else if(!positions.containsKey(PlayerColor.GREEN)) {
+			initPlayerPosition(PlayerColor.GREEN, PlayerStartPosition.GREEN);
+		}
+		else if(!positions.containsKey(PlayerColor.YELLOW)) {
+			initPlayerPosition(PlayerColor.YELLOW, PlayerStartPosition.YELLOW);
+		}
+		else if(!positions.containsKey(PlayerColor.PURPLE)) {
+			initPlayerPosition(PlayerColor.PURPLE, PlayerStartPosition.PURPLE);
+		}
 	}
 
 	public ResponsePositionsPlayersPartyJson waitStartParty() {
-		state = PartyState.WAIT_START;
+		state = State.WAIT_START;
 		bulletsTaked.put(PlayerColor.RED, BulletColor.RED);
 		bulletsTaked.put(PlayerColor.GREEN, BulletColor.GREEN);
 		bulletsTaked.put(PlayerColor.YELLOW, BulletColor.YELLOW);
@@ -62,9 +81,9 @@ public class Party {
 	}
 
 	public ResponsePartyStateJson startParty() {
-		state = PartyState.PLAY;
+		state = State.PLAY;
 		ResponsePartyStateJson responsePartyStateJson = new ResponsePartyStateJson();
-		responsePartyStateJson.partyState = state;
+		responsePartyStateJson.state = state;
 		return responsePartyStateJson;
 	}
 
@@ -117,7 +136,7 @@ public class Party {
 	public void playerDie(PlayerColor playerColor) {
 		playerOrder.add(playerColor);
 		if(playerOrder.size() == players.size() - 1) {
-			state = PartyState.SCORE;
+			state = State.SCORE;
 
 			List<PlayerColor> lastPlayerSearch = new ArrayList<>(scores.keySet());
 			lastPlayerSearch.removeAll(playerOrder);
@@ -131,7 +150,7 @@ public class Party {
 
 			for(Map.Entry<PlayerColor, Integer> score : scores.entrySet()) {
 				if(score.getValue() >= 10) {
-					state = PartyState.END;
+					state = State.MENU;
 				}
 			}
 		}
@@ -144,11 +163,11 @@ public class Party {
 		}
 	}
 
-	public void setState(PartyState state) {
+	public void setState(State state) {
 		this.state = state;
 	}
 
-	public PartyState getState() {
+	public State getState() {
 		return state;
 	}
 
